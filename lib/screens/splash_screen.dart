@@ -1,6 +1,6 @@
 import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
-import 'package:authenticator/screens/codes_screen.dart';
+import 'package:authenticator/screens/home_screen.dart';
 import 'package:authenticator/screens/onboarding_screen.dart';
 import 'package:authenticator/screens/paywall_screen.dart';
 import 'package:authenticator/startup/app_startup_coordinator.dart';
@@ -67,7 +67,7 @@ class _SplashScreenState extends State<SplashScreen> {
         break;
 
       case StartupDestination.home:
-        _replaceWith(const CodesScreen());
+        _replaceWith(const HomeScreen());
         break;
 
       case StartupDestination.paywall:

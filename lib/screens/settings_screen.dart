@@ -1,7 +1,9 @@
 import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
+import 'package:authenticator/screens/home_screen.dart';
 import 'package:authenticator/screens/set_passcode_screen.dart';
 import 'package:authenticator/services/biometric_auth.dart';
+import 'package:authenticator/widgets/bottom_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -15,16 +17,25 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  int _navIndex = 3;
+  static const _settingsIndex = 3;
+
+  void _onNavChanged(int index) {
+    // The standalone Settings screen only shows the Settings tab; selecting a
+    // different tab takes the user into the home shell on that tab.
+    if (index == _settingsIndex) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => HomeScreen(initialIndex: index)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.base,
       body: const SafeArea(bottom: false, child: SettingsBody()),
-      bottomNavigationBar: _BottomNavBar(
-        index: _navIndex,
-        onChanged: (i) => setState(() => _navIndex = i),
+      bottomNavigationBar: BottomNavBar(
+        index: _settingsIndex,
+        onChanged: _onNavChanged,
       ),
     );
   }
@@ -341,76 +352,5 @@ class _Chevron extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Icon(Icons.chevron_right, color: AppColors.gray400, size: 22);
-  }
-}
-
-class _BottomNavBar extends StatelessWidget {
-  final int index;
-  final ValueChanged<int> onChanged;
-
-  const _BottomNavBar({required this.index, required this.onChanged});
-
-  static const _items = [
-    (Icons.qr_code_2, 'Codes'),
-    (Icons.key, 'Passwords'),
-    (Icons.public, 'Browser'),
-    (Icons.settings, 'Settings'),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-        child: Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: AppColors.gray800,
-            borderRadius: BorderRadius.circular(32),
-          ),
-          child: Row(
-            children: List.generate(_items.length, (i) {
-              final active = i == index;
-              final item = _items[i];
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => onChanged(i),
-                  behavior: HitTestBehavior.opaque,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: active ? AppColors.white : Colors.transparent,
-                      borderRadius: BorderRadius.circular(26),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          item.$1,
-                          size: 20,
-                          color: active ? AppColors.black : AppColors.gray400,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item.$2,
-                          style: AppTextStyles.caption.copyWith(
-                            color: active ? AppColors.black : AppColors.gray400,
-                            fontWeight: active
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
-      ),
-    );
   }
 }

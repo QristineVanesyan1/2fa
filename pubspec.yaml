@@ -35,6 +35,23 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  # Biometric (Face ID / Touch ID / fingerprint) authentication.
+  local_auth: ^2.3.0
+
+  # Opening external URLs (e.g. Terms of Use / Privacy Policy).
+  url_launcher: ^6.3.0
+
+  # Scanning QR codes (otpauth:// URIs) with the device camera.
+  # Uses AVFoundation on iOS (no MLKit) so it builds on Apple Silicon simulators.
+  qr_code_scanner_plus: ^2.0.6
+
+  # Local key/value persistence (e.g. onboarding completion flag).
+  shared_preferences: ^2.3.2
+  flutter_svg: ^2.3.0
+
+
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -52,6 +69,10 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/svg/
 
   fonts:
     - family: Inter
