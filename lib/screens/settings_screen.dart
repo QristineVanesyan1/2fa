@@ -257,7 +257,7 @@ class _SettingsBodyState extends State<SettingsBody> {
               ),
               const _Divider(),
               _SettingRow(
-                icon: "assets/svg/Icon1.svg",
+                icon: "assets/svg/message.svg",
                 iconBg: AppColors.teal,
                 title: 'Contact Support',
                 trailing: const _Chevron(),
