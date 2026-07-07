@@ -12,14 +12,42 @@ class SetPasscodeScreen extends StatefulWidget {
 class _SetPasscodeScreenState extends State<SetPasscodeScreen> {
   static const int _length = 4;
   String _passcode = '';
+  String? _firstPasscode;
+  bool _confirming = false;
+  bool _error = false;
 
   void _onDigit(String d) {
     if (_passcode.length >= _length) return;
-    setState(() => _passcode += d);
+    setState(() {
+      _passcode += d;
+      _error = false;
+    });
     if (_passcode.length == _length) {
-      Future.delayed(const Duration(milliseconds: 200), () {
-        if (mounted) Navigator.of(context).pop(_passcode);
+      Future.delayed(const Duration(milliseconds: 200), _onComplete);
+    }
+  }
+
+  void _onComplete() {
+    if (!mounted) return;
+    if (!_confirming) {
+      // First entry done — move to the confirmation step.
+      setState(() {
+        _firstPasscode = _passcode;
+        _confirming = true;
+        _passcode = '';
       });
+    } else {
+      if (_passcode == _firstPasscode) {
+        Navigator.of(context).pop(_passcode);
+      } else {
+        // Mismatch — restart from the beginning.
+        setState(() {
+          _error = true;
+          _confirming = false;
+          _firstPasscode = null;
+          _passcode = '';
+        });
+      }
     }
   }
 
@@ -55,14 +83,26 @@ class _SetPasscodeScreenState extends State<SetPasscodeScreen> {
           children: [
             const SizedBox(height: 12),
             Text(
-              'Create a passcode',
+              _confirming ? 'Re-enter to confirm' : 'Create a passcode',
               style: AppTextStyles.bodyMediumSemiBold.copyWith(
                 color: AppColors.black,
               ),
             ),
             const SizedBox(height: 28),
-            _PasscodeDots(length: _length, filled: _passcode.length),
+            _PasscodeDots(
+              length: _length,
+              filled: _passcode.length,
+              error: _error,
+            ),
+            if (_error) ...[
+              const SizedBox(height: 16),
+              Text(
+                'Passcodes didn\'t match. Try again',
+                style: AppTextStyles.caption.copyWith(color: AppColors.error),
+              ),
+            ],
             const Spacer(),
+
             _Keypad(onDigit: _onDigit, onDelete: _onDelete),
             const SizedBox(height: 24),
           ],
@@ -75,11 +115,17 @@ class _SetPasscodeScreenState extends State<SetPasscodeScreen> {
 class _PasscodeDots extends StatelessWidget {
   final int length;
   final int filled;
+  final bool error;
 
-  const _PasscodeDots({required this.length, required this.filled});
+  const _PasscodeDots({
+    required this.length,
+    required this.filled,
+    this.error = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final Color activeColor = error ? AppColors.error : AppColors.orange500;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(length, (i) {
@@ -90,9 +136,9 @@ class _PasscodeDots extends StatelessWidget {
           width: 18,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isFilled ? AppColors.orange500 : Colors.transparent,
+            color: isFilled ? activeColor : Colors.transparent,
             border: Border.all(
-              color: isFilled ? AppColors.orange500 : AppColors.gray300,
+              color: isFilled ? activeColor : AppColors.gray300,
               width: 2,
             ),
           ),

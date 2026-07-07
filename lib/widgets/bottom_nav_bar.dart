@@ -1,6 +1,7 @@
 import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Shared bottom navigation bar used by the home shell (and any other screen
 /// that needs to show the same tab bar).
@@ -11,10 +12,10 @@ class BottomNavBar extends StatelessWidget {
   const BottomNavBar({super.key, required this.index, required this.onChanged});
 
   static const items = [
-    (Icons.qr_code_2, 'Codes'),
-    (Icons.key, 'Passwords'),
-    (Icons.public, 'Browser'),
-    (Icons.settings, 'Settings'),
+    ("assets/svg/Auth.svg", 'Codes'),
+    ("assets/svg/Password.svg", 'Passwords'),
+    ("assets/svg/Browser.svg", 'Browser'),
+    ("assets/svg/Settings.svg", 'Settings'),
   ];
 
   @override
@@ -47,10 +48,12 @@ class BottomNavBar extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
+                        SvgPicture.asset(
                           item.$1,
-                          size: 20,
-                          color: active ? AppColors.black : AppColors.gray400,
+                          colorFilter: ColorFilter.mode(
+                            active ? AppColors.black : AppColors.gray400,
+                            BlendMode.srcIn,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(

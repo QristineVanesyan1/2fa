@@ -8,6 +8,7 @@ import 'package:authenticator/services/biometric_auth.dart';
 import 'package:authenticator/widgets/bottom_nav_bar.dart';
 import 'package:authenticator/widgets/custom_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
@@ -147,6 +148,18 @@ class _SettingsBodyState extends State<SettingsBody> {
     }
   }
 
+  Future<void> _onChangePasscode() async {
+    final result = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const SetPasscodeScreen()),
+    );
+    if (!mounted) return;
+    if (result != null && result.length == 4) {
+      await _appLock.setPasscode(result);
+      if (!mounted) return;
+      CustomToast.show(context, message: 'Passcode changed');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -164,7 +177,7 @@ class _SettingsBodyState extends State<SettingsBody> {
           _Card(
             children: [
               _SettingRow(
-                icon: Icons.lock_outline,
+                icon: "assets/svg/Icon1.svg",
                 iconBg: AppColors.black,
                 title: 'Passcode Lock',
                 subtitle: 'Require passcode to open',
@@ -176,7 +189,7 @@ class _SettingsBodyState extends State<SettingsBody> {
               ),
               const _Divider(),
               _SettingRow(
-                icon: Icons.fingerprint,
+                icon: "assets/svg/Icon1.svg",
                 iconBg: _faceIdEnabled
                     ? AppColors.orange500
                     : AppColors.gray400,
@@ -205,15 +218,26 @@ class _SettingsBodyState extends State<SettingsBody> {
                   ],
                 ),
               ),
+              if (_passcodeLock) ...[
+                const _Divider(),
+                _SettingRow(
+                  icon: "assets/svg/change_passcode.svg",
+                  iconBg: AppColors.orange500,
+                  title: 'Change Passcode',
+                  trailing: const _Chevron(),
+                  onTap: _onChangePasscode,
+                ),
+              ],
             ],
           ),
+
           const SizedBox(height: 28),
           _SectionLabel('General'),
           const SizedBox(height: 10),
           _Card(
             children: [
               _SettingRow(
-                icon: Icons.ios_share,
+                icon: "assets/svg/Icon1.svg",
                 iconBg: AppColors.blue,
                 title: 'Share App',
                 trailing: const _Chevron(),
@@ -221,7 +245,7 @@ class _SettingsBodyState extends State<SettingsBody> {
               ),
               const _Divider(),
               _SettingRow(
-                icon: Icons.star_border,
+                icon: "assets/svg/Icon1.svg",
                 iconBg: AppColors.orange400,
                 title: 'Rate Us',
                 trailing: const _Chevron(),
@@ -229,7 +253,7 @@ class _SettingsBodyState extends State<SettingsBody> {
               ),
               const _Divider(),
               _SettingRow(
-                icon: Icons.chat_bubble_outline,
+                icon: "assets/svg/Icon1.svg",
                 iconBg: AppColors.teal,
                 title: 'Contact Support',
                 trailing: const _Chevron(),
@@ -237,7 +261,7 @@ class _SettingsBodyState extends State<SettingsBody> {
               ),
               const _Divider(),
               _SettingRow(
-                icon: Icons.description_outlined,
+                icon: "assets/svg/privacy.svg",
                 iconBg: AppColors.blue,
                 title: 'Terms of Use',
                 trailing: const _Chevron(),
@@ -245,7 +269,7 @@ class _SettingsBodyState extends State<SettingsBody> {
               ),
               const _Divider(),
               _SettingRow(
-                icon: Icons.privacy_tip_outlined,
+                icon: "assets/svg/privacy.svg",
                 iconBg: AppColors.success,
                 title: 'Privacy Policy',
                 trailing: const _Chevron(),
@@ -254,7 +278,7 @@ class _SettingsBodyState extends State<SettingsBody> {
 
               const _Divider(),
               _SettingRow(
-                icon: Icons.shopping_bag_outlined,
+                icon: "assets/svg/restore.svg",
                 iconBg: AppColors.orange500,
                 title: 'Restore Purchase',
                 trailing: const _Chevron(),
@@ -312,7 +336,7 @@ class _Divider extends StatelessWidget {
 }
 
 class _SettingRow extends StatelessWidget {
-  final IconData icon;
+  final String icon;
   final Color iconBg;
   final String title;
   final String? subtitle;
@@ -347,7 +371,7 @@ class _SettingRow extends StatelessWidget {
                 color: iconBg,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: AppColors.white, size: 20),
+              child: SvgPicture.asset(icon),
             ),
             const SizedBox(width: 14),
             Expanded(
