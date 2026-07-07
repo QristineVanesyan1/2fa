@@ -177,7 +177,7 @@ class _SettingsBodyState extends State<SettingsBody> {
           _Card(
             children: [
               _SettingRow(
-                icon: "assets/svg/Icon1.svg",
+                icon: "assets/svg/passcode.svg",
                 iconBg: AppColors.black,
                 title: 'Passcode Lock',
                 subtitle: 'Require passcode to open',
@@ -189,7 +189,7 @@ class _SettingsBodyState extends State<SettingsBody> {
               ),
               const _Divider(),
               _SettingRow(
-                icon: "assets/svg/Icon1.svg",
+                icon: "assets/svg/face_id.svg",
                 iconBg: _faceIdEnabled
                     ? AppColors.orange500
                     : AppColors.gray400,
@@ -237,7 +237,7 @@ class _SettingsBodyState extends State<SettingsBody> {
           _Card(
             children: [
               _SettingRow(
-                icon: "assets/svg/Icon1.svg",
+                icon: "assets/svg/share.svg",
                 iconBg: AppColors.blue,
                 title: 'Share App',
                 trailing: const _Chevron(),
@@ -245,7 +245,7 @@ class _SettingsBodyState extends State<SettingsBody> {
               ),
               const _Divider(),
               _SettingRow(
-                icon: "assets/svg/Icon1.svg",
+                icon: "assets/svg/rate.svg",
                 iconBg: AppColors.orange400,
                 title: 'Rate Us',
                 trailing: const _Chevron(),
@@ -371,7 +371,10 @@ class _SettingRow extends StatelessWidget {
                 color: iconBg,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: SvgPicture.asset(icon),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SvgPicture.asset(icon),
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -409,6 +412,6 @@ class _Chevron extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Icon(Icons.chevron_right, color: AppColors.gray400, size: 22);
+    return const Icon(Icons.chevron_right, color: AppColors.black, size: 22);
   }
 }
