@@ -2,6 +2,7 @@ import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/data/account_local_data_source.dart';
 import 'package:authenticator/models/account.dart';
+import 'package:authenticator/widgets/custom_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -107,14 +108,7 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
 
     if (!mounted) return;
     Navigator.of(context).pop();
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          content: Text('$service added'),
-        ),
-      );
+    CustomToast.show(context, message: '$service added');
   }
 
   @override

@@ -4,6 +4,7 @@ import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/data/password_local_data_source.dart';
 import 'package:authenticator/models/password_entry.dart';
+import 'package:authenticator/widgets/custom_toast.dart';
 import 'package:flutter/material.dart';
 
 /// Screen for adding a new password entry, with an optional built-in
@@ -101,14 +102,7 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
 
     if (!mounted) return;
     Navigator.of(context).pop();
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          content: Text('$service password saved'),
-        ),
-      );
+    CustomToast.show(context, message: '$service password saved');
   }
 
   /// Strength on a 0..1 scale from length + character variety.

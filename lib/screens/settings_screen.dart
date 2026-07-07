@@ -105,9 +105,19 @@ class _SettingsBodyState extends State<SettingsBody> {
     final uri = Uri.parse(url);
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Could not open $url')));
+      CustomToast.show(context, message: 'Could not open $url');
+    }
+  }
+
+  Future<void> _contactSupport() async {
+    final uri = Uri(
+      scheme: 'mailto',
+      path: 'support@authenticator.app',
+      query: 'subject=${Uri.encodeComponent('Authenticator Support')}',
+    );
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && mounted) {
+      CustomToast.show(context, message: 'Could not open mail app');
     }
   }
 
@@ -127,14 +137,13 @@ class _SettingsBodyState extends State<SettingsBody> {
         CustomToast.show(context, message: 'Face ID enabled');
       }
       if (!result.success && result.error != null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(result.error!)));
+        CustomToast.show(context, message: result.error!);
       }
     } else {
       await _appLock.setFaceIdEnabled(false);
       if (!mounted) return;
       setState(() => _faceId = false);
+      CustomToast.show(context, message: 'Face ID disabled');
     }
   }
 
@@ -224,7 +233,7 @@ class _SettingsBodyState extends State<SettingsBody> {
                 iconBg: AppColors.teal,
                 title: 'Contact Support',
                 trailing: const _Chevron(),
-                onTap: () {},
+                onTap: _contactSupport,
               ),
               const _Divider(),
               _SettingRow(

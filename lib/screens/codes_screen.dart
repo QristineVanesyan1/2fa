@@ -6,6 +6,7 @@ import 'package:authenticator/data/account_local_data_source.dart';
 import 'package:authenticator/models/account.dart';
 import 'package:authenticator/screens/add_manually_screen.dart';
 import 'package:authenticator/screens/scan_qr_screen.dart';
+import 'package:authenticator/widgets/custom_toast.dart';
 import 'package:authenticator/widgets/empty_state.dart';
 import 'package:authenticator/widgets/search_field.dart';
 import 'package:flutter/material.dart';
@@ -127,14 +128,7 @@ class _CodesScreenState extends State<CodesScreen> {
 
   void _copyCode(Account account) {
     Clipboard.setData(ClipboardData(text: account.code.replaceAll(' ', '')));
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          content: Text('${account.name} code copied'),
-        ),
-      );
+    CustomToast.show(context, message: '${account.name} code copied');
   }
 
   @override

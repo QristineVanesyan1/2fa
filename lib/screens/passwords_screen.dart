@@ -3,6 +3,7 @@ import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/data/password_local_data_source.dart';
 import 'package:authenticator/models/password_entry.dart';
 import 'package:authenticator/screens/add_password_screen.dart';
+import 'package:authenticator/widgets/custom_toast.dart';
 import 'package:authenticator/widgets/empty_state.dart';
 import 'package:authenticator/widgets/search_field.dart';
 import 'package:flutter/material.dart';
@@ -72,14 +73,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
 
   void _copyPassword(PasswordEntry entry) {
     Clipboard.setData(ClipboardData(text: entry.password));
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          behavior: SnackBarBehavior.floating,
-          content: Text('${entry.service} password copied'),
-        ),
-      );
+    CustomToast.show(context, message: '${entry.service} password copied');
   }
 
   @override

@@ -2,6 +2,7 @@ import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/services/app_lock_service.dart';
 import 'package:authenticator/services/biometric_auth.dart';
+import 'package:authenticator/widgets/custom_toast.dart';
 import 'package:flutter/material.dart';
 
 /// Full-screen lock that must be cleared (via passcode or Face ID) before the
@@ -69,9 +70,7 @@ class _LockScreenState extends State<LockScreen> {
     } else if (result.error != null && !_passcodeEnabled) {
       // If there is no passcode fallback, surface the error so the user can
       // retry biometrics.
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(result.error!)));
+      CustomToast.show(context, message: result.error!);
     }
   }
 
