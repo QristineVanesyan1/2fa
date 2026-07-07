@@ -9,8 +9,20 @@ import 'package:flutter/material.dart';
 
 /// Screen for adding a new password entry, with an optional built-in
 /// password generator and a live strength indicator.
+///
+/// When [entry] and [editIndex] are provided the screen operates in "edit"
+/// mode: the fields are pre-filled and saving updates the existing entry in
+/// place instead of appending a new one.
 class AddPasswordScreen extends StatefulWidget {
-  const AddPasswordScreen({super.key});
+  /// Existing entry to edit. When null the screen adds a new password.
+  final PasswordEntry? entry;
+
+  /// Index of [entry] within the stored list, used when persisting an edit.
+  final int? editIndex;
+
+  const AddPasswordScreen({super.key, this.entry, this.editIndex});
+
+  bool get isEditing => entry != null && editIndex != null;
 
   @override
   State<AddPasswordScreen> createState() => _AddPasswordScreenState();
@@ -44,6 +56,12 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
   @override
   void initState() {
     super.initState();
+    final entry = widget.entry;
+    if (entry != null) {
+      _serviceController.text = entry.service;
+      _accountController.text = entry.account;
+      _passwordController.text = entry.password;
+    }
     _serviceController.addListener(_onChanged);
     _accountController.addListener(_onChanged);
     _passwordController.addListener(_onChanged);
@@ -98,11 +116,22 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
       account: _accountController.text.trim(),
       password: _passwordController.text,
     );
-    await _dataSource.addPassword(entry);
+
+    final bool editing = widget.isEditing;
+    if (editing) {
+      await _dataSource.updatePassword(widget.editIndex!, entry);
+    } else {
+      await _dataSource.addPassword(entry);
+    }
 
     if (!mounted) return;
-    Navigator.of(context).pop();
-    CustomToast.show(context, message: '$service password saved');
+    Navigator.of(context).pop(true);
+    CustomToast.show(
+      context,
+      message: editing
+          ? '$service password updated'
+          : '$service password saved',
+    );
   }
 
   /// Strength on a 0..1 scale from length + character variety.
@@ -138,9 +167,10 @@ class _AddPasswordScreenState extends State<AddPasswordScreen> {
           ),
         ),
         title: Text(
-          'Add Password',
+          widget.isEditing ? 'Edit Password' : 'Add Password',
           style: AppTextStyles.h2.copyWith(color: AppColors.black),
         ),
+
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),

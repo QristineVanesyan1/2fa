@@ -106,7 +106,7 @@ class _SettingsBodyState extends State<SettingsBody> {
     final uri = Uri.parse(url);
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && mounted) {
-      CustomToast.show(context, message: 'Could not open $url');
+      CustomToast.show(context, message: 'Could not open $url', success: false);
     }
   }
 
@@ -118,7 +118,11 @@ class _SettingsBodyState extends State<SettingsBody> {
     );
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && mounted) {
-      CustomToast.show(context, message: 'Could not open mail app');
+      CustomToast.show(
+        context,
+        message: 'Could not open mail app',
+        success: false,
+      );
     }
   }
 
@@ -138,13 +142,13 @@ class _SettingsBodyState extends State<SettingsBody> {
         CustomToast.show(context, message: 'Face ID enabled');
       }
       if (!result.success && result.error != null) {
-        CustomToast.show(context, message: result.error!);
+        CustomToast.show(context, message: result.error!, success: false);
       }
     } else {
       await _appLock.setFaceIdEnabled(false);
       if (!mounted) return;
       setState(() => _faceId = false);
-      CustomToast.show(context, message: 'Face ID disabled');
+      CustomToast.show(context, message: 'Face ID disabled', success: false);
     }
   }
 

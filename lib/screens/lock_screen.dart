@@ -70,7 +70,7 @@ class _LockScreenState extends State<LockScreen> {
     } else if (result.error != null && !_passcodeEnabled) {
       // If there is no passcode fallback, surface the error so the user can
       // retry biometrics.
-      CustomToast.show(context, message: result.error!);
+      CustomToast.show(context, message: result.error!, success: false);
     }
   }
 

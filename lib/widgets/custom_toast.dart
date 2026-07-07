@@ -20,6 +20,7 @@ class CustomToast {
     BuildContext context, {
     required String message,
     Duration duration = const Duration(seconds: 2),
+    bool success = true,
   }) {
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
     if (overlay == null) return;
@@ -33,6 +34,7 @@ class CustomToast {
       builder: (context) => _ToastWidget(
         message: message,
         duration: duration,
+        success: success,
         onDismissed: () {
           if (_currentEntry == entry) {
             _currentEntry = null;
@@ -50,11 +52,13 @@ class CustomToast {
 class _ToastWidget extends StatefulWidget {
   final String message;
   final Duration duration;
+  final bool success;
   final VoidCallback onDismissed;
 
   const _ToastWidget({
     required this.message,
     required this.duration,
+    required this.success,
     required this.onDismissed,
   });
 
@@ -133,20 +137,22 @@ class _ToastWidgetState extends State<_ToastWidget>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      height: 26,
-                      width: 26,
-                      decoration: const BoxDecoration(
-                        color: AppColors.success,
-                        shape: BoxShape.circle,
+                    if (widget.success) ...[
+                      Container(
+                        height: 26,
+                        width: 26,
+                        decoration: const BoxDecoration(
+                          color: AppColors.success,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check,
+                          color: AppColors.white,
+                          size: 16,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.check,
-                        color: AppColors.white,
-                        size: 16,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
+                      const SizedBox(width: 12),
+                    ],
                     Flexible(
                       child: Text(
                         widget.message,

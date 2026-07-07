@@ -17,6 +17,9 @@ abstract class PasswordLocalDataSource {
   /// Appends a single entry and persists.
   Future<void> addPassword(PasswordEntry password);
 
+  /// Replaces the entry at [index] with [password] and persists.
+  Future<void> updatePassword(int index, PasswordEntry password);
+
   /// Removes the entry at [index] and persists.
   Future<void> deletePassword(int index);
 
@@ -59,6 +62,14 @@ class SharedPrefsPasswordLocalDataSource implements PasswordLocalDataSource {
   }
 
   @override
+  Future<void> updatePassword(int index, PasswordEntry password) async {
+    final passwords = await getPasswords();
+    if (index < 0 || index >= passwords.length) return;
+    passwords[index] = password;
+    await savePasswords(passwords);
+  }
+
+  @override
   Future<void> deletePassword(int index) async {
     final passwords = await getPasswords();
     if (index < 0 || index >= passwords.length) return;
@@ -93,6 +104,12 @@ class InMemoryPasswordLocalDataSource implements PasswordLocalDataSource {
   @override
   Future<void> addPassword(PasswordEntry password) async =>
       _passwords.add(password);
+
+  @override
+  Future<void> updatePassword(int index, PasswordEntry password) async {
+    if (index < 0 || index >= _passwords.length) return;
+    _passwords[index] = password;
+  }
 
   @override
   Future<void> deletePassword(int index) async {
