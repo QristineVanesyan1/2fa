@@ -12,40 +12,6 @@ import 'package:authenticator/widgets/search_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Seed data used the first time the app runs so the list isn't empty.
-const _demoAccounts = <Account>[
-  Account(
-    name: 'GitHub',
-    issuerEmail: 'alice@dev.io',
-    code: '482 091',
-    avatarColor: AppColors.black,
-  ),
-  Account(
-    name: 'Google',
-    issuerEmail: 'alice@gmail.com',
-    code: '613 007',
-    avatarColor: AppColors.orange500,
-  ),
-  Account(
-    name: 'Stripe',
-    issuerEmail: 'alice@company.com',
-    code: '185 148',
-    avatarColor: AppColors.blue,
-  ),
-  Account(
-    name: 'AWS',
-    issuerEmail: 'root@company-aws.com',
-    code: '633 789',
-    avatarColor: AppColors.orange400,
-  ),
-  Account(
-    name: 'Figma',
-    issuerEmail: 'alice@design.io',
-    code: '424 521',
-    avatarColor: AppColors.red,
-  ),
-];
-
 /// Standalone Codes tab: lists TOTP accounts with a live countdown and lets the
 /// user add more accounts.
 class CodesScreen extends StatefulWidget {
@@ -92,6 +58,16 @@ class _CodesScreenState extends State<CodesScreen> {
     });
   }
 
+  // Signatures of the old seeded demo accounts ("name|issuerEmail|code"),
+  // used to purge them from storage while keeping real user-added accounts.
+  static const Set<String> _demoSignatures = {
+    'GitHub|alice@dev.io|482 091',
+    'Google|alice@gmail.com|613 007',
+    'Stripe|alice@company.com|185 148',
+    'AWS|root@company-aws.com|633 789',
+    'Figma|alice@design.io|424 521',
+  };
+
   Future<void> _load() async {
     if (widget.showEmpty) {
       if (!mounted) return;
@@ -99,10 +75,16 @@ class _CodesScreenState extends State<CodesScreen> {
       return;
     }
     var accounts = await _accountsDataSource.getAccounts();
-    // Seed with demo accounts on first run so the list isn't empty.
-    if (accounts.isEmpty) {
-      await _accountsDataSource.saveAccounts(_demoAccounts);
-      accounts = _demoAccounts;
+    // Remove any previously seeded demo accounts, keeping only saved ones.
+    final cleaned = accounts
+        .where(
+          (a) =>
+              !_demoSignatures.contains('${a.name}|${a.issuerEmail}|${a.code}'),
+        )
+        .toList();
+    if (cleaned.length != accounts.length) {
+      await _accountsDataSource.saveAccounts(cleaned);
+      accounts = cleaned;
     }
     if (!mounted) return;
     setState(() => _accounts = accounts);
@@ -177,11 +159,11 @@ class _CodesScreenState extends State<CodesScreen> {
             ),
             Expanded(
               child: accounts.isEmpty
-                  ? const EmptyState(
+                  ? EmptyState(
                       title: 'Nothing here yet',
                       subtitle:
                           'Add your first account manually\nor scan a QR code',
-                      icon: Icons.fingerprint,
+                      icon: "assets/images/empty1.png",
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),

@@ -439,8 +439,8 @@ class _StartPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            height: 120,
-            width: 120,
+            height: 160,
+            width: 160,
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
@@ -451,11 +451,7 @@ class _StartPage extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: const Icon(
-              Icons.travel_explore,
-              size: 60,
-              color: AppColors.orange500,
-            ),
+            child: Image.asset("assets/images/empty3.png"),
           ),
           const SizedBox(height: 16),
           Text(

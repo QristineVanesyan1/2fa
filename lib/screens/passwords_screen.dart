@@ -179,10 +179,10 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
             ),
             Expanded(
               child: passwords.isEmpty
-                  ? const EmptyState(
+                  ? EmptyState(
                       title: 'No passwords yet',
                       subtitle: 'Tap + to save your first password',
-                      icon: Icons.key,
+                      icon: "assets/images/empty2.png",
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),

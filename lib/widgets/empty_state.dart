@@ -1,12 +1,13 @@
 import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Centered empty-state placeholder shared by the Codes and Passwords screens.
 class EmptyState extends StatelessWidget {
   final String title;
   final String subtitle;
-  final IconData icon;
+  final String icon;
 
   const EmptyState({
     super.key,
@@ -22,8 +23,8 @@ class EmptyState extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            height: 120,
-            width: 120,
+            height: 160,
+            width: 160,
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
@@ -34,7 +35,7 @@ class EmptyState extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Icon(icon, size: 64, color: AppColors.orange500),
+            child: Image.asset(icon),
           ),
           const SizedBox(height: 20),
           Text(title, style: AppTextStyles.h3.copyWith(color: AppColors.black)),
