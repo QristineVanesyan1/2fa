@@ -1,5 +1,7 @@
+import 'package:authenticator/services/app_lock_service.dart';
 import 'package:authenticator/services/onboarding_service.dart';
 import 'package:authenticator/services/purchase_service.dart';
+
 import 'package:authenticator/startup/app_startup_coordinator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,6 +11,7 @@ void main() {
       final coordinator = AppStartupCoordinator(
         onboardingService: InMemoryOnboardingService(complete: false),
         purchaseService: FakePurchaseService(result: true),
+        appLockService: InMemoryAppLockService(),
       );
 
       expect(
@@ -21,6 +24,7 @@ void main() {
       final coordinator = AppStartupCoordinator(
         onboardingService: InMemoryOnboardingService(complete: true),
         purchaseService: FakePurchaseService(result: true),
+        appLockService: InMemoryAppLockService(),
       );
 
       expect(
@@ -33,6 +37,7 @@ void main() {
       final coordinator = AppStartupCoordinator(
         onboardingService: InMemoryOnboardingService(complete: true),
         purchaseService: FakePurchaseService(result: false),
+        appLockService: InMemoryAppLockService(),
       );
 
       expect(
@@ -45,6 +50,7 @@ void main() {
       final coordinator = AppStartupCoordinator(
         onboardingService: InMemoryOnboardingService(complete: true),
         purchaseService: FakePurchaseService(error: Exception('network')),
+        appLockService: InMemoryAppLockService(),
       );
 
       expect(
@@ -60,6 +66,7 @@ void main() {
       final coordinator = AppStartupCoordinator(
         onboardingService: onboarding,
         purchaseService: FakePurchaseService(result: false),
+        appLockService: InMemoryAppLockService(),
       );
 
       final destination = await coordinator.completeOnboardingAndResolve();
@@ -73,9 +80,11 @@ void main() {
       final coordinator = AppStartupCoordinator(
         onboardingService: onboarding,
         purchaseService: FakePurchaseService(result: true),
+        appLockService: InMemoryAppLockService(),
       );
 
       // First launch -> onboarding.
+
       expect(
         await coordinator.resolveInitialDestination(),
         StartupDestination.onboarding,

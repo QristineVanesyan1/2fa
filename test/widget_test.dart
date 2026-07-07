@@ -1,8 +1,10 @@
 // Widget tests for the app startup / splash flow.
 
 import 'package:authenticator/screens/splash_screen.dart';
+import 'package:authenticator/services/app_lock_service.dart';
 import 'package:authenticator/services/onboarding_service.dart';
 import 'package:authenticator/services/purchase_service.dart';
+
 import 'package:authenticator/startup/app_startup_coordinator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,11 +21,13 @@ void main() {
     final coordinator = AppStartupCoordinator(
       onboardingService: InMemoryOnboardingService(complete: true),
       purchaseService: FakePurchaseService(result: false),
+      appLockService: InMemoryAppLockService(),
     );
 
     await tester.pumpWidget(_wrap(coordinator));
 
     // First frame: preloader is visible before checks resolve.
+
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
     await tester.pumpAndSettle();
@@ -35,12 +39,14 @@ void main() {
     final coordinator = AppStartupCoordinator(
       onboardingService: InMemoryOnboardingService(complete: true),
       purchaseService: FakePurchaseService(result: false),
+      appLockService: InMemoryAppLockService(),
     );
 
     await tester.pumpWidget(_wrap(coordinator));
     await tester.pumpAndSettle();
 
     // Paywall screen content is shown, splash preloader is gone.
+
     expect(find.byType(CircularProgressIndicator), findsNothing);
     expect(find.text('Continue'), findsOneWidget);
   });
@@ -50,6 +56,7 @@ void main() {
     final coordinator = AppStartupCoordinator(
       onboardingService: InMemoryOnboardingService(complete: true),
       purchaseService: purchases,
+      appLockService: InMemoryAppLockService(),
     );
 
     await tester.pumpWidget(_wrap(coordinator));

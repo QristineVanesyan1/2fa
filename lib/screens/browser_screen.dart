@@ -2,10 +2,11 @@ import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 /// Private in-app browser surface with three states:
 ///   - start page ("Browse privately")
-///   - loaded page (renders the requested URL)
+///   - loaded page (renders the requested URL in a real WebView)
 ///   - error page ("Can't reach this page")
 class BrowserScreen extends StatefulWidget {
   const BrowserScreen({super.key});
@@ -17,16 +18,62 @@ class BrowserScreen extends StatefulWidget {
 class _BrowserScreenState extends State<BrowserScreen> {
   final TextEditingController _urlController = TextEditingController();
 
-  // Session history so back/forward behave naturally.
-  final List<String> _history = <String>[];
-  int _index = -1;
+  late final WebViewController _controller;
 
-  String? get _url =>
-      (_index >= 0 && _index < _history.length) ? _history[_index] : null;
+  bool _hasPage = false;
+  bool _isLoading = false;
+  bool _hasError = false;
+  bool _canGoBack = false;
+  bool _canGoForward = false;
 
-  bool get _hasPage => _url != null;
-  bool get _canGoBack => _index > 0;
-  bool get _canGoForward => _index < _history.length - 1;
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(AppColors.card)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (_) {
+            if (!mounted) return;
+            setState(() {
+              _isLoading = true;
+              _hasError = false;
+            });
+          },
+          onPageFinished: (url) async {
+            if (!mounted) return;
+            setState(() {
+              _isLoading = false;
+              if (url.isNotEmpty && url != 'about:blank') {
+                _urlController.text = url;
+              }
+            });
+            await _updateNavState();
+          },
+          onWebResourceError: (error) {
+            // Ignore errors for subframes/other resources; only fail the
+            // main page load.
+            if (error.isForMainFrame == false) return;
+            if (!mounted) return;
+            setState(() {
+              _isLoading = false;
+              _hasError = true;
+            });
+          },
+        ),
+      );
+  }
+
+  Future<void> _updateNavState() async {
+    final back = await _controller.canGoBack();
+    final forward = await _controller.canGoForward();
+    if (!mounted) return;
+    setState(() {
+      _canGoBack = back;
+      _canGoForward = forward;
+    });
+  }
 
   @override
   void dispose() {
@@ -50,13 +97,12 @@ class _BrowserScreenState extends State<BrowserScreen> {
     final url = _normalize(input);
     if (url == null) return;
     setState(() {
-      if (_index < _history.length - 1) {
-        _history.removeRange(_index + 1, _history.length);
-      }
-      _history.add(url);
-      _index = _history.length - 1;
+      _hasPage = true;
+      _hasError = false;
+      _isLoading = true;
       _urlController.text = url;
     });
+    _controller.loadRequest(Uri.parse(url));
     FocusScope.of(context).unfocus();
   }
 
@@ -68,37 +114,44 @@ class _BrowserScreenState extends State<BrowserScreen> {
     }
   }
 
-  void _goBack() {
-    if (!_canGoBack) return;
-    setState(() {
-      _index--;
-      _urlController.text = _url ?? '';
-    });
+  Future<void> _goBack() async {
+    if (await _controller.canGoBack()) {
+      await _controller.goBack();
+      await _updateNavState();
+    }
   }
 
-  void _goForward() {
-    if (!_canGoForward) return;
-    setState(() {
-      _index++;
-      _urlController.text = _url ?? '';
-    });
+  Future<void> _goForward() async {
+    if (await _controller.canGoForward()) {
+      await _controller.goForward();
+      await _updateNavState();
+    }
   }
 
-  void _reload() => setState(() {});
+  void _reload() => _controller.reload();
 
   void _endSession() {
+    _controller.clearCache();
+    _controller.loadRequest(Uri.parse('about:blank'));
     setState(() {
-      _history.clear();
-      _index = -1;
+      _hasPage = false;
+      _hasError = false;
+      _isLoading = false;
+      _canGoBack = false;
+      _canGoForward = false;
       _urlController.clear();
     });
     FocusScope.of(context).unfocus();
   }
 
   void _clearUrl() {
+    _controller.loadRequest(Uri.parse('about:blank'));
     setState(() {
-      _history.clear();
-      _index = -1;
+      _hasPage = false;
+      _hasError = false;
+      _isLoading = false;
+      _canGoBack = false;
+      _canGoForward = false;
       _urlController.clear();
     });
   }
@@ -136,7 +189,11 @@ class _BrowserScreenState extends State<BrowserScreen> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: _hasPage
-                ? _PageView(url: _url!)
+                ? _PageView(
+                    controller: _controller,
+                    isLoading: _isLoading,
+                    hasError: _hasError,
+                  )
                 : _StartPage(onPaste: _pasteAndLoad),
           ),
         ),
@@ -440,9 +497,15 @@ class _StartPage extends StatelessWidget {
 }
 
 class _PageView extends StatelessWidget {
-  final String url;
+  final WebViewController controller;
+  final bool isLoading;
+  final bool hasError;
 
-  const _PageView({required this.url});
+  const _PageView({
+    required this.controller,
+    required this.isLoading,
+    required this.hasError,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -451,17 +514,14 @@ class _PageView extends StatelessWidget {
       child: Container(
         color: AppColors.card,
         width: double.infinity,
-        child: Image.network(
-          url,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-          loadingBuilder: (context, child, progress) {
-            if (progress == null) return child;
-            return const _LoadingPage();
-          },
-          errorBuilder: (context, error, stack) => const _ErrorPage(),
-        ),
+        child: hasError
+            ? const _ErrorPage()
+            : Stack(
+                children: [
+                  WebViewWidget(controller: controller),
+                  if (isLoading) const _LoadingPage(),
+                ],
+              ),
       ),
     );
   }

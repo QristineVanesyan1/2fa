@@ -49,6 +49,10 @@ dependencies:
   shared_preferences: ^2.3.2
   flutter_svg: ^2.3.0
 
+  # In-app web browser used by the private Browser tab.
+  webview_flutter: ^4.10.0
+
+
 
 
 

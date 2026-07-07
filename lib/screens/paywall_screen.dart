@@ -1,5 +1,6 @@
 import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
+import 'package:authenticator/screens/home_screen.dart';
 import 'package:authenticator/screens/settings_screen.dart';
 import 'package:authenticator/widgets/primary_button.dart';
 import 'package:flutter/gestures.dart';
@@ -133,7 +134,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                           onPressed: () {
                             Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
-                                builder: (_) => const SettingsScreen(),
+                                builder: (_) => const HomeScreen(),
                               ),
                               (route) => false,
                             );

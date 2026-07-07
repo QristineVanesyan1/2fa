@@ -1,7 +1,9 @@
 import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/screens/splash_screen.dart';
+import 'package:authenticator/services/app_lock_service.dart';
 import 'package:authenticator/services/onboarding_service.dart';
 import 'package:authenticator/services/purchase_service.dart';
+
 import 'package:authenticator/startup/app_startup_coordinator.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +15,7 @@ void main() {
   final coordinator = AppStartupCoordinator(
     onboardingService: SharedPrefsOnboardingService(),
     purchaseService: StubPurchaseService(),
+    appLockService: SharedPrefsAppLockService(),
   );
 
   runApp(MyApp(coordinator: coordinator));

@@ -1,3 +1,4 @@
+import 'package:authenticator/services/app_lock_service.dart';
 import 'package:authenticator/services/onboarding_service.dart';
 import 'package:authenticator/services/purchase_service.dart';
 
@@ -24,10 +25,16 @@ class AppStartupCoordinator {
   const AppStartupCoordinator({
     required this.onboardingService,
     required this.purchaseService,
+    required this.appLockService,
   });
 
   final OnboardingService onboardingService;
   final PurchaseService purchaseService;
+  final AppLockService appLockService;
+
+  /// Whether the app should present a lock screen (passcode / Face ID) before
+  /// revealing any content, based on the user's security settings.
+  Future<bool> isLockEnabled() => appLockService.isLockEnabled();
 
   /// Resolves the destination for a fresh app launch.
   ///

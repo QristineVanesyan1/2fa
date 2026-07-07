@@ -2,9 +2,13 @@ import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/screens/home_screen.dart';
 import 'package:authenticator/screens/set_passcode_screen.dart';
+import 'package:authenticator/services/app_lock_service.dart';
 import 'package:authenticator/services/biometric_auth.dart';
+
 import 'package:authenticator/widgets/bottom_nav_bar.dart';
+import 'package:authenticator/widgets/custom_toast.dart';
 import 'package:flutter/material.dart';
+
 import 'package:url_launcher/url_launcher.dart';
 
 /// Full-screen Settings page (with its own bottom navigation), used when the
@@ -33,10 +37,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: AppColors.base,
       body: const SafeArea(bottom: false, child: SettingsBody()),
-      bottomNavigationBar: BottomNavBar(
-        index: _settingsIndex,
-        onChanged: _onNavChanged,
-      ),
     );
   }
 }
@@ -51,6 +51,8 @@ class SettingsBody extends StatefulWidget {
 }
 
 class _SettingsBodyState extends State<SettingsBody> {
+  final AppLockService _appLock = SharedPrefsAppLockService();
+
   bool _passcodeLock = false;
   bool _faceId = false;
   bool _biometricAvailable = false;
@@ -58,13 +60,19 @@ class _SettingsBodyState extends State<SettingsBody> {
   @override
   void initState() {
     super.initState();
-    _checkBiometrics();
+    _init();
   }
 
-  Future<void> _checkBiometrics() async {
+  Future<void> _init() async {
     final available = await BiometricAuth.isAvailable();
+    final passcodeEnabled = await _appLock.isPasscodeEnabled();
+    final faceId = await _appLock.isFaceIdEnabled();
     if (!mounted) return;
-    setState(() => _biometricAvailable = available);
+    setState(() {
+      _biometricAvailable = available;
+      _passcodeLock = passcodeEnabled;
+      _faceId = faceId;
+    });
   }
 
   Future<void> _onPasscodeToggle(bool value) async {
@@ -73,9 +81,19 @@ class _SettingsBodyState extends State<SettingsBody> {
         MaterialPageRoute(builder: (_) => const SetPasscodeScreen()),
       );
       if (!mounted) return;
-      setState(() => _passcodeLock = result != null && result.length == 4);
+      final enabled = result != null && result.length == 4;
+      if (enabled) {
+        await _appLock.setPasscode(result);
+      }
+      if (!mounted) return;
+      setState(() => _passcodeLock = enabled);
+      if (enabled) {
+        CustomToast.show(context, message: 'Passcode enabled');
+      }
     } else {
       // Turning off the passcode also disables Face ID.
+      await _appLock.clearPasscode();
+      if (!mounted) return;
       setState(() {
         _passcodeLock = false;
         _faceId = false;
@@ -102,13 +120,20 @@ class _SettingsBodyState extends State<SettingsBody> {
         reason: 'Enable Face ID to unlock the app',
       );
       if (!mounted) return;
+      await _appLock.setFaceIdEnabled(result.success);
+      if (!mounted) return;
       setState(() => _faceId = result.success);
+      if (result.success) {
+        CustomToast.show(context, message: 'Face ID enabled');
+      }
       if (!result.success && result.error != null) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(result.error!)));
       }
     } else {
+      await _appLock.setFaceIdEnabled(false);
+      if (!mounted) return;
       setState(() => _faceId = false);
     }
   }

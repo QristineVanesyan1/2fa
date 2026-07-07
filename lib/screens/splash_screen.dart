@@ -1,9 +1,11 @@
 import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/screens/home_screen.dart';
+import 'package:authenticator/screens/lock_screen.dart';
 import 'package:authenticator/screens/onboarding_screen.dart';
 import 'package:authenticator/screens/paywall_screen.dart';
 import 'package:authenticator/startup/app_startup_coordinator.dart';
+
 import 'package:flutter/material.dart';
 
 /// Splash / preloader shown immediately on launch.
@@ -42,6 +44,10 @@ class _SplashScreenState extends State<SplashScreen> {
     if (mounted) setState(() => _phase = _Phase.loading);
 
     try {
+      // Require the app lock (passcode / Face ID) before revealing anything,
+      // if the user enabled it in Settings.
+      await _unlockIfNeeded();
+
       final destination = await widget.coordinator.resolveInitialDestination();
       await _goTo(destination);
     } catch (_) {
@@ -49,6 +55,27 @@ class _SplashScreenState extends State<SplashScreen> {
     } finally {
       _running = false;
     }
+  }
+
+  /// Presents the [LockScreen] and does not return until the user has
+  /// authenticated. No-op when the app lock is disabled.
+  Future<void> _unlockIfNeeded() async {
+    final lockEnabled = await widget.coordinator.isLockEnabled();
+    if (!lockEnabled || !mounted) return;
+
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (routeContext) => PopScope(
+          // Prevent dismissing the lock without authenticating.
+          canPop: false,
+          child: LockScreen(
+            appLockService: widget.coordinator.appLockService,
+            onUnlocked: () => Navigator.of(routeContext).pop(),
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _goTo(StartupDestination destination) async {
