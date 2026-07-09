@@ -131,8 +131,8 @@ class _LoadingView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: const [
-        _BrandBadge(),
+      children: [
+        Image.asset('assets/images/shield.png', height: 160),
         SizedBox(height: 28),
         SizedBox(
           height: 26,
@@ -159,7 +159,7 @@ class _ErrorView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const _BrandBadge(),
+          Image.asset('assets/images/shield.png', height: 160),
           const SizedBox(height: 28),
           Text(
             'Something went wrong',
@@ -197,34 +197,6 @@ class _ErrorView extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _BrandBadge extends StatelessWidget {
-  const _BrandBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 88,
-      width: 88,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.orange400, AppColors.orange500],
-        ),
-        borderRadius: BorderRadius.circular(26),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.orange500.withValues(alpha: 0.3),
-            blurRadius: 30,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: const Icon(Icons.lock, color: AppColors.white, size: 44),
     );
   }
 }

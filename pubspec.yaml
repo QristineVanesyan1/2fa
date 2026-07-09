@@ -52,6 +52,9 @@ dependencies:
   # In-app web browser used by the private Browser tab.
   webview_flutter: ^4.10.0
 
+  # Native share sheet used by "Share App".
+  share_plus: ^10.1.4
+
 
 
 

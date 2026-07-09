@@ -10,6 +10,7 @@ import 'package:authenticator/widgets/custom_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Full-screen Settings page (with its own bottom navigation), used when the
@@ -100,6 +101,16 @@ class _SettingsBodyState extends State<SettingsBody> {
         _faceId = false;
       });
     }
+  }
+
+  // Public link to the app, shared via the native share sheet.
+  static const String _appUrl = 'https://apps.apple.com/app/id0000000000';
+
+  Future<void> _shareApp() async {
+    await Share.share(
+      'Check out Authenticator — a simple, secure 2FA app: $_appUrl',
+      subject: 'Authenticator',
+    );
   }
 
   Future<void> _openUrl(String url) async {
@@ -245,7 +256,7 @@ class _SettingsBodyState extends State<SettingsBody> {
                 iconBg: AppColors.blue,
                 title: 'Share App',
                 trailing: const _Chevron(),
-                onTap: () {},
+                onTap: _shareApp,
               ),
               const _Divider(),
               _SettingRow(

@@ -4,6 +4,7 @@ import 'package:authenticator/services/app_lock_service.dart';
 import 'package:authenticator/services/biometric_auth.dart';
 import 'package:authenticator/widgets/custom_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Full-screen lock that must be cleared (via passcode or Face ID) before the
 /// user can reach the rest of the app. Shown on launch whenever a passcode
@@ -120,8 +121,7 @@ class _LockScreenState extends State<LockScreen> {
         child: Column(
           children: [
             const SizedBox(height: 32),
-            const _BrandBadge(),
-            const SizedBox(height: 24),
+            Image.asset('assets/images/shield.png', height: 160),
             Text(
               'Enter Passcode',
               style: AppTextStyles.h3.copyWith(color: AppColors.black),
@@ -173,34 +173,6 @@ class _LockScreenState extends State<LockScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _BrandBadge extends StatelessWidget {
-  const _BrandBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 72,
-      width: 72,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.orange400, AppColors.orange500],
-        ),
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.orange500.withValues(alpha: 0.3),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: const Icon(Icons.lock, color: AppColors.white, size: 36),
     );
   }
 }
