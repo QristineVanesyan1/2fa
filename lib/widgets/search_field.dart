@@ -1,6 +1,7 @@
 import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Rounded search input shared by the Codes and Passwords screens.
 class SearchField extends StatelessWidget {
@@ -25,11 +26,14 @@ class SearchField extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Row(
         children: [
-          const Icon(Icons.search, color: AppColors.gray500, size: 22),
+          SvgPicture.asset("assets/svg/Search.svg"),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
               controller: controller,
+              onTapOutside: (_) {
+                FocusScope.of(context).unfocus();
+              },
               onChanged: onChanged,
               style: AppTextStyles.bodyMedium.copyWith(color: AppColors.black),
               decoration: InputDecoration(

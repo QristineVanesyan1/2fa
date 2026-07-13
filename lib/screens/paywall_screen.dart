@@ -270,11 +270,34 @@ class _PlanTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  plan.title,
-                  style: AppTextStyles.bodyMediumSemiBold.copyWith(
-                    color: AppColors.black,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      plan.title,
+                      style: AppTextStyles.bodyMediumSemiBold.copyWith(
+                        color: AppColors.black,
+                      ),
+                    ),
+                    if (plan.highlight != null) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 1,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(100),
+                          color: AppColors.orange50,
+                        ),
+                        child: Text(
+                          plan.highlight ?? '',
+                          style: AppTextStyles.captionBold.copyWith(
+                            color: AppColors.orange500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -286,15 +309,7 @@ class _PlanTile extends StatelessWidget {
               ],
             ),
           ),
-          if (plan.highlight != null) ...[
-            Text(
-              plan.highlight!,
-              style: AppTextStyles.captionBold.copyWith(
-                color: AppColors.orange500,
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
+
           RichText(
             text: TextSpan(
               text: plan.price,

@@ -320,6 +320,9 @@ class _InputField extends StatelessWidget {
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
+        onTapOutside: (_) {
+          FocusScope.of(context).unfocus();
+        },
         style: AppTextStyles.bodyMedium.copyWith(color: AppColors.black),
         decoration: InputDecoration(
           hintText: hintText,
@@ -366,6 +369,9 @@ class _PasswordField extends StatelessWidget {
             child: TextField(
               controller: controller,
               obscureText: obscure,
+              onTapOutside: (_) {
+                FocusScope.of(context).unfocus();
+              },
               obscuringCharacter: 'x',
               style: AppTextStyles.numberMedium.copyWith(
                 color: AppColors.black,

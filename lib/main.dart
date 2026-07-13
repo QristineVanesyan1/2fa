@@ -1,3 +1,4 @@
+import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/screens/splash_screen.dart';
 import 'package:authenticator/services/app_lock_service.dart';
@@ -6,9 +7,15 @@ import 'package:authenticator/services/purchase_service.dart';
 
 import 'package:authenticator/startup/app_startup_coordinator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   // Compose the startup dependencies here so they are easy to swap (e.g. a real
   // store-backed PurchaseService) and to inject in tests.
@@ -29,9 +36,22 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      builder: (context, child) {
+        final mediaQuery = MediaQuery.of(context);
+
+        return MediaQuery(
+          data: mediaQuery.copyWith(textScaler: const TextScaler.linear(1.0)),
+          child: child!,
+        );
+      },
       debugShowCheckedModeBanner: false,
       title: 'Authenticator',
       theme: ThemeData(
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: AppColors.orange500,
+
+          elevation: 4,
+        ),
         fontFamily: AppTextStyles.fontFamily,
         textTheme: const TextTheme(
           displayLarge: AppTextStyles.display,

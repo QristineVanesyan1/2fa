@@ -72,56 +72,105 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cutOut = MediaQuery.of(context).size.width * 0.7;
     return Scaffold(
       backgroundColor: AppColors.black,
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.black,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         titleSpacing: 0,
         iconTheme: const IconThemeData(color: AppColors.white),
-        leading: IconButton(
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+        leading: Container(
+          decoration: BoxDecoration(
+            color: AppColors.gray10,
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            onPressed: () => Navigator.of(context).maybePop(),
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          ),
         ),
+        centerTitle: false,
         title: Text(
           'Scan QR Code',
           style: AppTextStyles.h2.copyWith(color: AppColors.white),
         ),
         actions: [
-          IconButton(
-            onPressed: () => _controller?.toggleFlash(),
-            icon: const Icon(Icons.flash_on),
-          ),
-          IconButton(
-            onPressed: () => _controller?.flipCamera(),
-            icon: const Icon(Icons.cameraswitch_outlined),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.gray10,
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              onPressed: () => _controller?.toggleFlash(),
+              icon: const Icon(Icons.flash_on),
+            ),
           ),
         ],
       ),
       body: Stack(
         children: [
-          QRView(
-            key: _qrKey,
-            onQRViewCreated: _onViewCreated,
-            overlay: QrScannerOverlayShape(
-              borderColor: AppColors.white,
-              borderRadius: 24,
-              borderLength: 32,
-              borderWidth: 6,
-              cutOutSize: cutOut,
+          Padding(
+            padding: EdgeInsetsGeometry.only(
+              bottom: MediaQuery.of(context).size.height / 4,
+            ),
+            child: QRView(
+              key: _qrKey,
+              onQRViewCreated: _onViewCreated,
+              overlay: QrScannerOverlayShape(
+                borderColor: AppColors.orange500,
+                borderRadius: 24,
+                borderLength: 32,
+                borderWidth: 6,
+              ),
             ),
           ),
+
           Positioned(
-            left: 24,
-            right: 24,
-            bottom: 60,
-            child: Text(
-              'Point your camera at the QR code shown by the service.',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.white),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                height: MediaQuery.of(context).size.height / 4,
+                width: double.infinity,
+                color: AppColors.black,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Align the QR code within the frame',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.gray500,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    TextButton(
+                      style: ButtonStyle(
+                        overlayColor: WidgetStateProperty.all(
+                          Colors.transparent,
+                        ),
+                        splashFactory: NoSplash.splashFactory,
+                      ),
+                      onPressed: () {
+                        _controller?.pauseCamera();
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const AddManuallyScreen(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'Enter manually instead',
+                        style: AppTextStyles.button.copyWith(
+                          color: AppColors.orange500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],

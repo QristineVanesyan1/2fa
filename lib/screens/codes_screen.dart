@@ -12,6 +12,7 @@ import 'package:authenticator/widgets/empty_state.dart';
 import 'package:authenticator/widgets/search_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 
 /// Standalone Codes tab: lists TOTP accounts with a live countdown and lets the
 /// user add more accounts.
@@ -178,10 +179,9 @@ class _CodesScreenState extends State<CodesScreen> {
       backgroundColor: AppColors.base,
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddAccountSheet,
-        backgroundColor: AppColors.orange500,
-        elevation: 4,
+
         shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: AppColors.white, size: 30),
+        child: const Icon(Icons.add_rounded, color: AppColors.white, size: 30),
       ),
       body: SafeArea(
         bottom: false,
@@ -314,11 +314,7 @@ class _AccountRow extends StatelessWidget {
           IconButton(
             onPressed: onCopy,
             visualDensity: VisualDensity.compact,
-            icon: const Icon(
-              Icons.copy_rounded,
-              size: 20,
-              color: AppColors.gray500,
-            ),
+            icon: SvgPicture.asset("assets/svg/Copy.svg"),
           ),
         ],
       ),
@@ -400,7 +396,7 @@ class _AddAccountSheet extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           _AddOption(
-            icon: Icons.qr_code_2,
+            icon: 'assets/svg/QR.svg',
             iconBg: AppColors.orange500,
             background: AppColors.orange50,
             title: 'Scan QR Code',
@@ -414,7 +410,7 @@ class _AddAccountSheet extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _AddOption(
-            icon: Icons.keyboard_alt_outlined,
+            icon: 'assets/svg/keyboard.svg',
             iconBg: AppColors.black,
             background: AppColors.gray100,
             title: 'Enter Manually',
@@ -435,7 +431,7 @@ class _AddAccountSheet extends StatelessWidget {
 }
 
 class _AddOption extends StatelessWidget {
-  final IconData icon;
+  final String icon;
   final Color iconBg;
   final Color background;
   final String title;
@@ -466,11 +462,12 @@ class _AddOption extends StatelessWidget {
               Container(
                 height: 46,
                 width: 46,
+                padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: iconBg,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: AppColors.white, size: 24),
+                child: SvgPicture.asset(icon),
               ),
               const SizedBox(width: 14),
               Column(

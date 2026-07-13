@@ -2,6 +2,7 @@ import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 /// Private in-app browser surface with three states:
@@ -236,6 +237,9 @@ class _AddressBar extends StatelessWidget {
               child: TextField(
                 controller: controller,
                 textInputAction: TextInputAction.go,
+                onTapOutside: (_) {
+                  FocusScope.of(context).unfocus();
+                },
                 onSubmitted: onSubmit,
                 keyboardType: TextInputType.url,
                 autocorrect: false,
@@ -348,18 +352,22 @@ class _ToolBar extends StatelessWidget {
       child: Row(
         children: [
           _CircleButton(
-            icon: Icons.arrow_back_ios_new,
+            icon: 'assets/svg/arrow_left.svg',
             enabled: canGoBack,
             onTap: onBack,
           ),
           const SizedBox(width: 10),
           _CircleButton(
-            icon: Icons.arrow_forward_ios,
+            icon: 'assets/svg/arrow_right.svg',
             enabled: canGoForward,
             onTap: onForward,
           ),
           const SizedBox(width: 10),
-          _CircleButton(icon: Icons.refresh, enabled: active, onTap: onReload),
+          _CircleButton(
+            icon: 'assets/svg/Generate.svg',
+            enabled: active,
+            onTap: onReload,
+          ),
           const Spacer(),
           GestureDetector(
             onTap: active ? onEndSession : null,
@@ -389,7 +397,7 @@ class _ToolBar extends StatelessWidget {
 }
 
 class _CircleButton extends StatelessWidget {
-  final IconData icon;
+  final String icon;
   final bool enabled;
   final VoidCallback onTap;
 
@@ -407,14 +415,17 @@ class _CircleButton extends StatelessWidget {
       child: Container(
         height: 40,
         width: 40,
+        padding: EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: enabled ? AppColors.black : AppColors.gray200,
+          color: AppColors.gray50,
           shape: BoxShape.circle,
         ),
-        child: Icon(
+        child: SvgPicture.asset(
           icon,
-          size: 16,
-          color: enabled ? AppColors.white : AppColors.gray400,
+          colorFilter: ColorFilter.mode(
+            enabled ? AppColors.black : AppColors.gray400,
+            BlendMode.srcIn,
+          ),
         ),
       ),
     );
