@@ -1,7 +1,6 @@
 import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 /// Centered empty-state placeholder shared by the Codes and Passwords screens.
 class EmptyState extends StatelessWidget {

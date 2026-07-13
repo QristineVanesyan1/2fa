@@ -22,15 +22,18 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
 
   void _onViewCreated(QRViewController controller) {
     _controller = controller;
-    controller.scannedDataStream.listen((scanData) {
+    controller.scannedDataStream.listen((scanData) async {
       final raw = scanData.code;
       if (_handled || raw == null || raw.isEmpty) return;
       final parsed = _parseOtpAuth(raw);
       if (parsed != null) {
         _handled = true;
-        controller.pauseCamera();
         if (!mounted) return;
-        Navigator.of(context).pushReplacement(
+        final navigator = Navigator.of(context);
+        await controller.pauseCamera();
+        // Push (not replace) so this route stays on the stack; once the user
+        // finishes adding, we pop back to the Codes screen which then reloads.
+        await navigator.push(
           MaterialPageRoute<void>(
             builder: (_) => AddManuallyScreen(
               initialService: parsed.issuer,
@@ -39,6 +42,7 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
             ),
           ),
         );
+        navigator.pop();
       }
     });
   }
@@ -154,14 +158,17 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
                         ),
                         splashFactory: NoSplash.splashFactory,
                       ),
-                      onPressed: () {
-                        _controller?.pauseCamera();
-                        Navigator.of(context).pushReplacement(
+                      onPressed: () async {
+                        final navigator = Navigator.of(context);
+                        await _controller?.pauseCamera();
+                        await navigator.push(
                           MaterialPageRoute<void>(
                             builder: (_) => const AddManuallyScreen(),
                           ),
                         );
+                        navigator.pop();
                       },
+
                       child: Text(
                         'Enter manually instead',
                         style: AppTextStyles.button.copyWith(

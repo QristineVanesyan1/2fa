@@ -1,8 +1,8 @@
+import 'dart:async';
+
 import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/screens/home_screen.dart';
-import 'package:authenticator/screens/settings_screen.dart';
-import 'package:authenticator/widgets/primary_button.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -17,6 +17,24 @@ class PaywallScreen extends StatefulWidget {
 
 class _PaywallScreenState extends State<PaywallScreen> {
   int _selectedPlan = 0;
+  bool _showClose = false;
+  Timer? _closeTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _closeTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() => _showClose = true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _closeTimer?.cancel();
+    super.dispose();
+  }
 
   static const List<_Plan> _plans = [
     _Plan(
@@ -206,14 +224,15 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 ),
               ],
             ),
-            Align(
-              alignment: Alignment.topLeft,
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                onPressed: () => Navigator.of(context).maybePop(),
-                icon: const Icon(Icons.close, color: AppColors.black),
+            if (_showClose)
+              Align(
+                alignment: Alignment.topLeft,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(Icons.close, color: AppColors.black),
+                ),
               ),
-            ),
           ],
         ),
       ),

@@ -14,6 +14,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 
+/// How the user chose to add a new account from the add-account sheet.
+enum _AddMethod { scan, manual }
+
 /// Standalone Codes tab: lists TOTP accounts with a live countdown and lets the
 /// user add more accounts.
 class CodesScreen extends StatefulWidget {
@@ -74,48 +77,9 @@ class _CodesScreenState extends State<CodesScreen> {
   // Signatures of the old static demo accounts ("name|issuerEmail|code"),
   // which carried a hard-coded code and no secret. They are migrated to demo
   // accounts backed by real TOTP secrets so codes actually rotate.
-  static const Set<String> _staticDemoSignatures = {
-    'GitHub|alice@dev.io|482 091',
-    'Google|alice@gmail.com|613 007',
-    'Stripe|alice@company.com|185 148',
-    'AWS|root@company-aws.com|633 789',
-    'Figma|alice@design.io|424 521',
-  };
 
   // Demo accounts backed by real Base32 secrets so the generated codes rotate
   // every 30 seconds, exactly like Google Authenticator.
-  static const List<Account> _demoAccounts = [
-    Account(
-      name: 'GitHub',
-      issuerEmail: 'alice@dev.io',
-      secret: 'JBSWY3DPEHPK3PXP',
-      avatarColor: AppColors.black,
-    ),
-    Account(
-      name: 'Google',
-      issuerEmail: 'alice@gmail.com',
-      secret: 'KVKFKRCPNZQUYMLXOVYDSQKJKZDTSRLD',
-      avatarColor: AppColors.orange500,
-    ),
-    Account(
-      name: 'Stripe',
-      issuerEmail: 'alice@company.com',
-      secret: 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ',
-      avatarColor: AppColors.blue,
-    ),
-    Account(
-      name: 'AWS',
-      issuerEmail: 'root@company-aws.com',
-      secret: 'NB2W45DFOIZA====',
-      avatarColor: AppColors.orange400,
-    ),
-    Account(
-      name: 'Figma',
-      issuerEmail: 'alice@design.io',
-      secret: 'MFRGGZDFMZTWQ2LK',
-      avatarColor: AppColors.red,
-    ),
-  ];
 
   Future<void> _load() async {
     if (widget.showEmpty) {
@@ -126,24 +90,10 @@ class _CodesScreenState extends State<CodesScreen> {
     var accounts = await _accountsDataSource.getAccounts();
 
     // Migrate away from the old static demo accounts (code, but no secret).
-    final cleaned = accounts
-        .where(
-          (a) => !_staticDemoSignatures.contains(
-            '${a.name}|${a.issuerEmail}|${a.code}',
-          ),
-        )
-        .toList();
 
     // Seed the secret-backed demo accounts on a fresh install so the tab shows
     // live, rotating codes out of the box.
-    if (cleaned.isEmpty) {
-      cleaned.addAll(_demoAccounts);
-    }
 
-    if (cleaned.length != accounts.length) {
-      await _accountsDataSource.saveAccounts(cleaned);
-      accounts = cleaned;
-    }
     if (!mounted) return;
     setState(() => _accounts = accounts);
   }
@@ -156,13 +106,31 @@ class _CodesScreenState extends State<CodesScreen> {
   }
 
   Future<void> _showAddAccountSheet() async {
-    await showModalBottomSheet<void>(
+    // The sheet only reports which method the user picked; the actual
+    // navigation happens here so we can await it and reload afterwards.
+    final method = await showModalBottomSheet<_AddMethod>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => const _AddAccountSheet(),
     );
-    // Reload in case a new account was persisted while the sheet was open.
+    if (!mounted || method == null) return;
+
+    switch (method) {
+      case _AddMethod.scan:
+        await Navigator.of(
+          context,
+        ).push(MaterialPageRoute<void>(builder: (_) => const ScanQrScreen()));
+        break;
+      case _AddMethod.manual:
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const AddManuallyScreen()),
+        );
+        break;
+    }
+
+    if (!mounted) return;
+    // Reload so any account persisted during the add flow shows up here.
     await _load();
   }
 
@@ -402,12 +370,7 @@ class _AddAccountSheet extends StatelessWidget {
             background: AppColors.orange50,
             title: 'Scan QR Code',
             subtitle: 'Use your camera to scan',
-            onTap: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const ScanQrScreen()),
-              );
-            },
+            onTap: () => Navigator.of(context).pop(_AddMethod.scan),
           ),
           const SizedBox(height: 12),
           _AddOption(
@@ -416,14 +379,7 @@ class _AddAccountSheet extends StatelessWidget {
             background: AppColors.gray100,
             title: 'Enter Manually',
             subtitle: 'Type the secret key',
-            onTap: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const AddManuallyScreen(),
-                ),
-              );
-            },
+            onTap: () => Navigator.of(context).pop(_AddMethod.manual),
           ),
         ],
       ),

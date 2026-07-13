@@ -4,7 +4,6 @@ import 'package:authenticator/services/app_lock_service.dart';
 import 'package:authenticator/services/biometric_auth.dart';
 import 'package:authenticator/widgets/custom_toast.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 /// Full-screen lock that must be cleared (via passcode or Face ID) before the
 /// user can reach the rest of the app. Shown on launch whenever a passcode

@@ -1,11 +1,9 @@
 import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
-import 'package:authenticator/screens/home_screen.dart';
 import 'package:authenticator/screens/set_passcode_screen.dart';
 import 'package:authenticator/services/app_lock_service.dart';
 import 'package:authenticator/services/biometric_auth.dart';
 
-import 'package:authenticator/widgets/bottom_nav_bar.dart';
 import 'package:authenticator/widgets/custom_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -23,17 +21,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  static const _settingsIndex = 3;
-
-  void _onNavChanged(int index) {
-    // The standalone Settings screen only shows the Settings tab; selecting a
-    // different tab takes the user into the home shell on that tab.
-    if (index == _settingsIndex) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => HomeScreen(initialIndex: index)),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,9 +94,15 @@ class _SettingsBodyState extends State<SettingsBody> {
   static const String _appUrl = 'https://apps.apple.com/app/id0000000000';
 
   Future<void> _shareApp() async {
+    final box = context.findRenderObject() as RenderBox?;
+
     await Share.share(
-      'Check out Authenticator — a simple, secure 2FA app: $_appUrl',
-      subject: 'Authenticator',
+      'Protect your accounts with Authenticator — a simple, fast, '
+      'and secure 2FA app.\n\n'
+      'Download it here:\n$_appUrl',
+      sharePositionOrigin: box == null
+          ? const Rect.fromLTWH(0, 0, 1, 1)
+          : box.localToGlobal(Offset.zero) & box.size,
     );
   }
 
