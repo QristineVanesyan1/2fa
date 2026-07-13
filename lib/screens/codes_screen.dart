@@ -6,6 +6,7 @@ import 'package:authenticator/data/account_local_data_source.dart';
 import 'package:authenticator/models/account.dart';
 import 'package:authenticator/screens/add_manually_screen.dart';
 import 'package:authenticator/screens/scan_qr_screen.dart';
+import 'package:authenticator/services/totp_service.dart';
 import 'package:authenticator/widgets/custom_toast.dart';
 import 'package:authenticator/widgets/empty_state.dart';
 import 'package:authenticator/widgets/search_field.dart';
@@ -33,8 +34,17 @@ class _CodesScreenState extends State<CodesScreen> {
   List<Account> _accounts = [];
 
   // Countdown seconds shared by every code (TOTP style 30s window).
-  int _remaining = 22;
+  int _remaining = TotpService.secondsRemaining();
   Timer? _timer;
+
+  /// Returns the live 6-digit TOTP code for [account], formatted for display.
+  /// Falls back to any stored [Account.code] when no secret is available.
+  String _codeFor(Account account) {
+    if (account.secret.trim().isEmpty) {
+      return account.code.isNotEmpty ? account.code : '------';
+    }
+    return TotpService.generateFormatted(account.secret);
+  }
 
   List<Account> get _filtered {
     if (_query.isEmpty) return _accounts;
@@ -52,21 +62,59 @@ class _CodesScreenState extends State<CodesScreen> {
   void initState() {
     super.initState();
     _load();
+    // Tick every second, syncing the countdown to the real TOTP window so the
+    // displayed codes rotate exactly when they expire.
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      setState(() => _remaining = _remaining <= 1 ? 30 : _remaining - 1);
+      setState(() => _remaining = TotpService.secondsRemaining());
     });
   }
 
-  // Signatures of the old seeded demo accounts ("name|issuerEmail|code"),
-  // used to purge them from storage while keeping real user-added accounts.
-  static const Set<String> _demoSignatures = {
+  // Signatures of the old static demo accounts ("name|issuerEmail|code"),
+  // which carried a hard-coded code and no secret. They are migrated to demo
+  // accounts backed by real TOTP secrets so codes actually rotate.
+  static const Set<String> _staticDemoSignatures = {
     'GitHub|alice@dev.io|482 091',
     'Google|alice@gmail.com|613 007',
     'Stripe|alice@company.com|185 148',
     'AWS|root@company-aws.com|633 789',
     'Figma|alice@design.io|424 521',
   };
+
+  // Demo accounts backed by real Base32 secrets so the generated codes rotate
+  // every 30 seconds, exactly like Google Authenticator.
+  static const List<Account> _demoAccounts = [
+    Account(
+      name: 'GitHub',
+      issuerEmail: 'alice@dev.io',
+      secret: 'JBSWY3DPEHPK3PXP',
+      avatarColor: AppColors.black,
+    ),
+    Account(
+      name: 'Google',
+      issuerEmail: 'alice@gmail.com',
+      secret: 'KVKFKRCPNZQUYMLXOVYDSQKJKZDTSRLD',
+      avatarColor: AppColors.orange500,
+    ),
+    Account(
+      name: 'Stripe',
+      issuerEmail: 'alice@company.com',
+      secret: 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ',
+      avatarColor: AppColors.blue,
+    ),
+    Account(
+      name: 'AWS',
+      issuerEmail: 'root@company-aws.com',
+      secret: 'NB2W45DFOIZA====',
+      avatarColor: AppColors.orange400,
+    ),
+    Account(
+      name: 'Figma',
+      issuerEmail: 'alice@design.io',
+      secret: 'MFRGGZDFMZTWQ2LK',
+      avatarColor: AppColors.red,
+    ),
+  ];
 
   Future<void> _load() async {
     if (widget.showEmpty) {
@@ -75,13 +123,22 @@ class _CodesScreenState extends State<CodesScreen> {
       return;
     }
     var accounts = await _accountsDataSource.getAccounts();
-    // Remove any previously seeded demo accounts, keeping only saved ones.
+
+    // Migrate away from the old static demo accounts (code, but no secret).
     final cleaned = accounts
         .where(
-          (a) =>
-              !_demoSignatures.contains('${a.name}|${a.issuerEmail}|${a.code}'),
+          (a) => !_staticDemoSignatures.contains(
+            '${a.name}|${a.issuerEmail}|${a.code}',
+          ),
         )
         .toList();
+
+    // Seed the secret-backed demo accounts on a fresh install so the tab shows
+    // live, rotating codes out of the box.
+    if (cleaned.isEmpty) {
+      cleaned.addAll(_demoAccounts);
+    }
+
     if (cleaned.length != accounts.length) {
       await _accountsDataSource.saveAccounts(cleaned);
       accounts = cleaned;
@@ -109,7 +166,8 @@ class _CodesScreenState extends State<CodesScreen> {
   }
 
   void _copyCode(Account account) {
-    Clipboard.setData(ClipboardData(text: account.code.replaceAll(' ', '')));
+    final code = _codeFor(account).replaceAll(' ', '');
+    Clipboard.setData(ClipboardData(text: code));
     CustomToast.show(context, message: '${account.name} code copied');
   }
 
@@ -178,6 +236,7 @@ class _CodesScreenState extends State<CodesScreen> {
                       ),
                       itemBuilder: (_, i) => _AccountRow(
                         account: accounts[i],
+                        code: _codeFor(accounts[i]),
                         remaining: _remaining,
                         onCopy: () => _copyCode(accounts[i]),
                       ),
@@ -192,11 +251,13 @@ class _CodesScreenState extends State<CodesScreen> {
 
 class _AccountRow extends StatelessWidget {
   final Account account;
+  final String code;
   final int remaining;
   final VoidCallback onCopy;
 
   const _AccountRow({
     required this.account,
+    required this.code,
     required this.remaining,
     required this.onCopy,
   });
@@ -244,7 +305,7 @@ class _AccountRow extends StatelessWidget {
             ),
           ),
           Text(
-            account.code,
+            code,
             style: AppTextStyles.numberLarge.copyWith(color: AppColors.black),
           ),
           const SizedBox(width: 10),
