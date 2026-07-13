@@ -439,65 +439,68 @@ class _StartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            height: 160,
-            width: 160,
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.orange500.withValues(alpha: 0.18),
-                  AppColors.orange500.withValues(alpha: 0.0),
-                ],
-              ),
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: Image.asset("assets/images/empty3.png"),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Browse privately',
-            style: AppTextStyles.h3.copyWith(color: AppColors.black),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'No history saved. Your session clears\n'
-            'automatically when you leave.',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray500),
-          ),
-          const SizedBox(height: 24),
-          Material(
-            color: AppColors.orange500,
-            borderRadius: BorderRadius.circular(26),
-            child: InkWell(
-              onTap: onPaste,
-              borderRadius: BorderRadius.circular(26),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 40,
-                  vertical: 14,
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              height: 160,
+              width: 160,
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  colors: [
+                    AppColors.orange500.withValues(alpha: 0.18),
+                    AppColors.orange500.withValues(alpha: 0.0),
+                  ],
                 ),
-                child: Text(
-                  'Paste a link',
-                  style: AppTextStyles.bodyMediumSemiBold.copyWith(
-                    color: AppColors.white,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Image.asset("assets/images/empty3.png"),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Browse privately',
+              style: AppTextStyles.h3.copyWith(color: AppColors.black),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'No history saved. Your session clears\n'
+              'automatically when you leave.',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray500),
+            ),
+            const SizedBox(height: 24),
+            Material(
+              color: AppColors.orange500,
+              borderRadius: BorderRadius.circular(26),
+              child: InkWell(
+                onTap: onPaste,
+                borderRadius: BorderRadius.circular(26),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 14,
+                  ),
+                  child: Text(
+                    'Paste a link',
+                    style: AppTextStyles.bodyMediumSemiBold.copyWith(
+                      color: AppColors.white,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

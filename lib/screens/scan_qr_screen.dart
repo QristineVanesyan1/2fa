@@ -2,6 +2,7 @@ import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/screens/add_manually_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 
 /// Full-screen QR code scanner used to add a 2FA account by scanning an
@@ -80,14 +81,14 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
         elevation: 0,
         titleSpacing: 0,
         iconTheme: const IconThemeData(color: AppColors.white),
-        leading: Container(
-          decoration: BoxDecoration(
-            color: AppColors.gray10,
-            shape: BoxShape.circle,
-          ),
-          child: IconButton(
-            onPressed: () => Navigator.of(context).maybePop(),
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: Container(
+            decoration: BoxDecoration(
+              color: AppColors.gray10,
+              shape: BoxShape.circle,
+            ),
+            child: SvgPicture.asset("assets/images/arrow_left.svg"),
           ),
         ),
         centerTitle: false,
@@ -96,14 +97,14 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
           style: AppTextStyles.h2.copyWith(color: AppColors.white),
         ),
         actions: [
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.gray10,
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              onPressed: () => _controller?.toggleFlash(),
-              icon: const Icon(Icons.flash_on),
+          IconButton(
+            onPressed: () => _controller?.toggleFlash(),
+            icon: Container(
+              decoration: BoxDecoration(
+                color: AppColors.gray10,
+                shape: BoxShape.circle,
+              ),
+              child: SvgPicture.asset("assets/images/Flash.svg"),
             ),
           ),
         ],

@@ -176,6 +176,7 @@ class _CodesScreenState extends State<CodesScreen> {
   Widget build(BuildContext context) {
     final accounts = _filtered;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: AppColors.base,
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddAccountSheet,

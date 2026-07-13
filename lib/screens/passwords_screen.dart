@@ -137,6 +137,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
   Widget build(BuildContext context) {
     final passwords = _filtered;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: AppColors.base,
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddPassword,

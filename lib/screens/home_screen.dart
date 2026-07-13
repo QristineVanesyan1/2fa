@@ -45,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: AppColors.base,
       body: _screenFor(_navIndex),
       bottomNavigationBar: BottomNavBar(
@@ -65,6 +66,7 @@ class _TabScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: AppColors.base,
       body: SafeArea(bottom: false, child: child),
     );
