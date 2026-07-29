@@ -1,6 +1,7 @@
 import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/screens/set_passcode_screen.dart';
+import 'package:authenticator/services/adapty_service.dart';
 import 'package:authenticator/services/app_lock_service.dart';
 import 'package:authenticator/services/biometric_auth.dart';
 import 'package:authenticator/services/review_service.dart';
@@ -43,9 +44,12 @@ class SettingsBody extends StatefulWidget {
 class _SettingsBodyState extends State<SettingsBody> {
   final AppLockService _appLock = SharedPrefsAppLockService();
 
+  final AdaptyService _adapty = AdaptyService.instance;
+
   bool _passcodeLock = false;
   bool _faceId = false;
   bool _biometricAvailable = false;
+  bool _restoring = false;
 
   @override
   void initState() {
@@ -104,6 +108,35 @@ class _SettingsBodyState extends State<SettingsBody> {
         message: 'Could not open the App Store',
         success: false,
       );
+    }
+  }
+
+  /// "Restore Purchase": asks the store for previous transactions and unlocks
+  /// premium when an active subscription is found.
+  Future<void> _restorePurchase() async {
+    if (_restoring) return;
+    setState(() => _restoring = true);
+    try {
+      // Safe to call repeatedly — activate() is a no-op once activated.
+      await _adapty.activate();
+      final unlocked = await _adapty.restore();
+      if (!mounted) return;
+      CustomToast.show(
+        context,
+        message: unlocked
+            ? 'Purchases restored'
+            : 'No active subscription to restore.',
+        success: unlocked,
+      );
+    } catch (_) {
+      if (!mounted) return;
+      CustomToast.show(
+        context,
+        message: 'Restore failed. Please try again.',
+        success: false,
+      );
+    } finally {
+      if (mounted) setState(() => _restoring = false);
     }
   }
 
@@ -304,8 +337,17 @@ class _SettingsBodyState extends State<SettingsBody> {
                 icon: "assets/svg/restore.svg",
                 iconBg: AppColors.orange500,
                 title: 'Restore Purchase',
-                trailing: const _Chevron(),
-                onTap: () {},
+                trailing: _restoring
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.orange500,
+                        ),
+                      )
+                    : const _Chevron(),
+                onTap: _restoring ? null : _restorePurchase,
               ),
             ],
           ),
