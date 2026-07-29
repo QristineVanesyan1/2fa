@@ -58,6 +58,9 @@ dependencies:
   # Subscriptions / in-app purchases & paywalls (Adapty).
   adapty_flutter: ^3.17.1
 
+  # Native "Rate this app" prompt (SKStoreReviewController on iOS).
+  in_app_review: ^2.0.9
+
 
 
 

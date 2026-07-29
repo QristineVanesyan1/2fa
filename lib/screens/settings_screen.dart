@@ -3,6 +3,7 @@ import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/screens/set_passcode_screen.dart';
 import 'package:authenticator/services/app_lock_service.dart';
 import 'package:authenticator/services/biometric_auth.dart';
+import 'package:authenticator/services/review_service.dart';
 
 import 'package:authenticator/widgets/custom_toast.dart';
 import 'package:flutter/material.dart';
@@ -91,7 +92,20 @@ class _SettingsBodyState extends State<SettingsBody> {
   }
 
   // Public link to the app, shared via the native share sheet.
-  static const String _appUrl = 'https://apps.apple.com/app/id0000000000';
+  static const String _appUrl = ReviewService.appStoreUrl;
+
+  /// "Rate Us": native rating sheet when available, App Store review page
+  /// otherwise.
+  Future<void> _rateApp() async {
+    final ok = await ReviewService.rateApp();
+    if (!ok && mounted) {
+      CustomToast.show(
+        context,
+        message: 'Could not open the App Store',
+        success: false,
+      );
+    }
+  }
 
   Future<void> _shareApp() async {
     final box = context.findRenderObject() as RenderBox?;
@@ -258,7 +272,7 @@ class _SettingsBodyState extends State<SettingsBody> {
                 iconBg: AppColors.orange400,
                 title: 'Rate Us',
                 trailing: const _Chevron(),
-                onTap: () {},
+                onTap: _rateApp,
               ),
               const _Divider(),
               _SettingRow(

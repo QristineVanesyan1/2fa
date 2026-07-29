@@ -2,6 +2,7 @@ import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/data/account_local_data_source.dart';
 import 'package:authenticator/models/account.dart';
+import 'package:authenticator/services/review_service.dart';
 import 'package:authenticator/widgets/custom_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -109,6 +110,12 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
     if (!mounted) return;
     Navigator.of(context).pop();
     CustomToast.show(context, message: '$service added');
+
+    // Successfully adding a code is a "happy moment" — a good time to ask for
+    // a rating. ReviewService throttles this itself (and Apple throttles it
+    // again), so it usually does nothing.
+    await ReviewService.registerAction();
+    await ReviewService.maybeRequestReview();
   }
 
   @override

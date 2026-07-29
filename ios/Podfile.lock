@@ -20,6 +20,8 @@ PODS:
   - AdaptyUIBuilder (3.17.2):
     - AdaptyLogger (= 3.17.2)
   - Flutter (1.0.0)
+  - in_app_review (2.0.0):
+    - Flutter
   - local_auth_darwin (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -39,6 +41,7 @@ PODS:
 DEPENDENCIES:
   - adapty_flutter (from `.symlinks/plugins/adapty_flutter/ios`)
   - Flutter (from `Flutter`)
+  - in_app_review (from `.symlinks/plugins/in_app_review/ios`)
   - local_auth_darwin (from `.symlinks/plugins/local_auth_darwin/darwin`)
   - qr_code_scanner_plus (from `.symlinks/plugins/qr_code_scanner_plus/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
@@ -59,6 +62,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/adapty_flutter/ios"
   Flutter:
     :path: Flutter
+  in_app_review:
+    :path: ".symlinks/plugins/in_app_review/ios"
   local_auth_darwin:
     :path: ".symlinks/plugins/local_auth_darwin/darwin"
   qr_code_scanner_plus:
@@ -80,6 +85,7 @@ SPEC CHECKSUMS:
   AdaptyUI: ecd9614d961257d4608315510e8030e40efbbcd5
   AdaptyUIBuilder: 7425b23c8039d62f02463a4d236e86c8e08d61f8
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  in_app_review: 7dd1ea365263f834b8464673f9df72c80c17c937
   local_auth_darwin: c3ee6cce0a8d56be34c8ccb66ba31f7f180aaebb
   qr_code_scanner_plus: c6e79405d5fc87c45349daed2da322bcb2728961
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
