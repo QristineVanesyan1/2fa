@@ -1,8 +1,10 @@
+import 'package:authenticator/services/adapty_service.dart';
+
 /// Abstraction over the app's purchase / subscription backend.
 ///
-/// A real implementation would talk to StoreKit / Google Play Billing or a
-/// wrapper such as RevenueCat. The startup flow only cares about entitlement,
-/// so the surface is intentionally tiny and easy to fake in tests.
+/// A real implementation talks to StoreKit / Google Play Billing via a wrapper
+/// such as Adapty. The startup flow only cares about entitlement, so the
+/// surface is intentionally tiny and easy to fake in tests.
 abstract class PurchaseService {
   /// Returns `true` when the user currently has an active entitlement.
   ///
@@ -30,6 +32,20 @@ class StubPurchaseService implements PurchaseService {
     await Future<void>.delayed(latency);
     return hasSubscription;
   }
+}
+
+/// Real, store-backed [PurchaseService] implementation powered by Adapty.
+///
+/// Delegates the entitlement lookup to [AdaptyService], which reads the user's
+/// premium access level from their Adapty profile.
+class AdaptyPurchaseService implements PurchaseService {
+  AdaptyPurchaseService({AdaptyService? adapty})
+    : _adapty = adapty ?? AdaptyService.instance;
+
+  final AdaptyService _adapty;
+
+  @override
+  Future<bool> hasActiveSubscription() => _adapty.hasActiveSubscription();
 }
 
 /// Deterministic [PurchaseService] for tests.

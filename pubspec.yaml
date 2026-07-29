@@ -1,5 +1,5 @@
 name: authenticator
-description: "A new Flutter project."
+description: "2FA App Authenticator — secure 2FA codes, password generator and private browser."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -55,6 +55,9 @@ dependencies:
   # Native share sheet used by "Share App".
   share_plus: ^10.1.4
 
+  # Subscriptions / in-app purchases & paywalls (Adapty).
+  adapty_flutter: ^3.17.1
+
 
 
 
@@ -70,6 +73,11 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
 
+  # Generates iOS & Android app launcher icons from a single source image.
+  # Run: `dart run flutter_launcher_icons`
+  # Configuration lives in the standalone `flutter_launcher_icons.yaml`.
+  flutter_launcher_icons: ^0.14.4
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -80,6 +88,8 @@ flutter:
   assets:
     - assets/images/
     - assets/svg/
+    - assets/icon/
+
 
   fonts:
     - family: Inter

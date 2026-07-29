@@ -13,7 +13,7 @@ abstract final class AppTextStyles {
   static const TextStyle display = TextStyle(
     fontFamily: 'PlusJakartaSans',
     fontWeight: FontWeight.w800,
-    fontSize: 36,
+    fontSize: 28,
     height: 37 / 36,
   );
 

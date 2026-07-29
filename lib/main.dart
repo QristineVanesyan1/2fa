@@ -1,6 +1,8 @@
 import 'package:authenticator/const/colors.dart';
+
 import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/screens/splash_screen.dart';
+import 'package:authenticator/services/adapty_service.dart';
 import 'package:authenticator/services/app_lock_service.dart';
 import 'package:authenticator/services/onboarding_service.dart';
 import 'package:authenticator/services/purchase_service.dart';
@@ -8,6 +10,14 @@ import 'package:authenticator/services/purchase_service.dart';
 import 'package:authenticator/startup/app_startup_coordinator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+/// Single entry point for Adapty activation.
+///
+/// [AdaptyService.activate] is itself idempotent (it checks both a Dart-side
+/// flag and the native `Adapty().isActivated()` state), so this must be the
+/// only place in the app that kicks off activation — never call it from a
+/// widget's `initState`, since a rebuild would attempt a second activation.
+Future<void> activateAdapty() => AdaptyService.instance.activate();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,9 +29,16 @@ Future<void> main() async {
 
   // Compose the startup dependencies here so they are easy to swap (e.g. a real
   // store-backed PurchaseService) and to inject in tests.
+  // Activate the Adapty SDK as early as possible so entitlement checks and the
+  // paywall are ready by the time the splash flow needs them. Activation never
+  // throws, so a failure here won't block startup.
+  await activateAdapty();
+
+  // Compose the startup dependencies here so they are easy to swap and to
+  // inject in tests. Entitlement is now backed by Adapty.
   final coordinator = AppStartupCoordinator(
     onboardingService: SharedPrefsOnboardingService(),
-    purchaseService: StubPurchaseService(),
+    purchaseService: AdaptyPurchaseService(),
     appLockService: SharedPrefsAppLockService(),
   );
 
@@ -45,7 +62,7 @@ class MyApp extends StatelessWidget {
         );
       },
       debugShowCheckedModeBanner: false,
-      title: 'Authenticator',
+      title: '2FA App Authenticator',
       theme: ThemeData(
         floatingActionButtonTheme: FloatingActionButtonThemeData(
           backgroundColor: AppColors.orange500,
@@ -68,7 +85,6 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: SplashScreen(coordinator: coordinator),
-      // home: SplashScreen(),
     );
   }
 }

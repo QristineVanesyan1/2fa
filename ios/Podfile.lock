@@ -1,4 +1,24 @@
 PODS:
+  - Adapty (3.17.2):
+    - AdaptyLogger (= 3.17.2)
+    - AdaptyUIBuilder (= 3.17.2)
+  - adapty_flutter (3.17.1):
+    - Adapty (= 3.17.2)
+    - AdaptyPlugin (= 3.17.2)
+    - AdaptyUI (= 3.17.2)
+    - Flutter
+  - AdaptyLogger (3.17.2)
+  - AdaptyPlugin (3.17.2):
+    - Adapty (= 3.17.2)
+    - AdaptyLogger (= 3.17.2)
+    - AdaptyUI (= 3.17.2)
+    - AdaptyUIBuilder (= 3.17.2)
+  - AdaptyUI (3.17.2):
+    - Adapty (= 3.17.2)
+    - AdaptyLogger (= 3.17.2)
+    - AdaptyUIBuilder (= 3.17.2)
+  - AdaptyUIBuilder (3.17.2):
+    - AdaptyLogger (= 3.17.2)
   - Flutter (1.0.0)
   - local_auth_darwin (0.0.1):
     - Flutter
@@ -17,6 +37,7 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
+  - adapty_flutter (from `.symlinks/plugins/adapty_flutter/ios`)
   - Flutter (from `Flutter`)
   - local_auth_darwin (from `.symlinks/plugins/local_auth_darwin/darwin`)
   - qr_code_scanner_plus (from `.symlinks/plugins/qr_code_scanner_plus/ios`)
@@ -25,7 +46,17 @@ DEPENDENCIES:
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
 
+SPEC REPOS:
+  trunk:
+    - Adapty
+    - AdaptyLogger
+    - AdaptyPlugin
+    - AdaptyUI
+    - AdaptyUIBuilder
+
 EXTERNAL SOURCES:
+  adapty_flutter:
+    :path: ".symlinks/plugins/adapty_flutter/ios"
   Flutter:
     :path: Flutter
   local_auth_darwin:
@@ -42,6 +73,12 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
 
 SPEC CHECKSUMS:
+  Adapty: fd1e8130a1298abba9bc084a69a63c80fcc5275a
+  adapty_flutter: 09d5cd1c53553f58f36d2ad3783e2ef68ad0c4aa
+  AdaptyLogger: c59354e1e6b602d08eae91b79bd1492d78c46820
+  AdaptyPlugin: 87183239c885f4a251acbd354631fd2d6f281a5b
+  AdaptyUI: ecd9614d961257d4608315510e8030e40efbbcd5
+  AdaptyUIBuilder: 7425b23c8039d62f02463a4d236e86c8e08d61f8
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   local_auth_darwin: c3ee6cce0a8d56be34c8ccb66ba31f7f180aaebb
   qr_code_scanner_plus: c6e79405d5fc87c45349daed2da322bcb2728961

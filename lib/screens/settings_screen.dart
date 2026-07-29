@@ -189,6 +189,7 @@ class _SettingsBodyState extends State<SettingsBody> {
                 iconBg: AppColors.black,
                 title: 'Passcode Lock',
                 subtitle: 'Require passcode to open',
+                style: AppTextStyles.bodyMedium,
                 trailing: Switch.adaptive(
                   value: _passcodeLock,
                   activeTrackColor: AppColors.orange500,
@@ -205,7 +206,7 @@ class _SettingsBodyState extends State<SettingsBody> {
                 subtitle: _faceIdEnabled
                     ? 'Unlock with Face ID'
                     : 'Not available on this device',
-
+                style: AppTextStyles.bodyMedium,
                 disabled: !_faceIdEnabled,
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -246,7 +247,7 @@ class _SettingsBodyState extends State<SettingsBody> {
             children: [
               _SettingRow(
                 icon: "assets/svg/share.svg",
-                iconBg: AppColors.blue,
+                iconBg: AppColors.info,
                 title: 'Share App',
                 trailing: const _Chevron(),
                 onTap: _shareApp,
@@ -309,7 +310,7 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: AppTextStyles.bodySmall.copyWith(color: AppColors.gray500),
+      style: AppTextStyles.captionMedium.copyWith(color: AppColors.gray500),
     );
   }
 }
@@ -322,7 +323,9 @@ class _Card extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      padding: EdgeInsets.symmetric(vertical: 3),
       decoration: BoxDecoration(
+        border: Border.all(color: AppColors.gray50),
         color: AppColors.white,
         borderRadius: BorderRadius.circular(20),
       ),
@@ -336,10 +339,7 @@ class _Divider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.only(left: 64),
-      child: Divider(height: 1, thickness: 1, color: AppColors.gray100),
-    );
+    return Container(height: 1, color: AppColors.gray50);
   }
 }
 
@@ -351,6 +351,7 @@ class _SettingRow extends StatelessWidget {
   final Widget trailing;
   final bool disabled;
   final VoidCallback? onTap;
+  final TextStyle? style;
 
   const _SettingRow({
     required this.icon,
@@ -360,6 +361,7 @@ class _SettingRow extends StatelessWidget {
     this.subtitle,
     this.disabled = false,
     this.onTap,
+    this.style,
   });
 
   @override
@@ -380,7 +382,7 @@ class _SettingRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(9.0),
                 child: SvgPicture.asset(icon),
               ),
             ),
@@ -391,9 +393,11 @@ class _SettingRow extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppTextStyles.bodyMediumSemiBold.copyWith(
-                      color: titleColor,
-                    ),
+                    style:
+                        style?.copyWith(color: titleColor) ??
+                        AppTextStyles.bodyMediumSemiBold.copyWith(
+                          color: titleColor,
+                        ),
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 2),
@@ -420,6 +424,10 @@ class _Chevron extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Icon(Icons.chevron_right, color: AppColors.black, size: 22);
+    return const Icon(
+      Icons.chevron_right_rounded,
+      color: AppColors.black,
+      size: 25,
+    );
   }
 }

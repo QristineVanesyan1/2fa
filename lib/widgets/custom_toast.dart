@@ -125,7 +125,7 @@ class _ToastWidgetState extends State<_ToastWidget>
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.gray800,
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: const [
                     BoxShadow(
                       color: Color(0x33000000),

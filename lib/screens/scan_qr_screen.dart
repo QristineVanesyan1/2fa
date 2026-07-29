@@ -85,20 +85,28 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
         elevation: 0,
         titleSpacing: 0,
         iconTheme: const IconThemeData(color: AppColors.white),
-        leading: IconButton(
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: Container(
+        leading: InkWell(
+          onTap: () => Navigator.of(context).maybePop(),
+          child: Container(
+            margin: EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: AppColors.gray10,
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(100),
             ),
-            child: SvgPicture.asset("assets/images/arrow_left.svg"),
+            padding: EdgeInsets.all(8),
+            child: SvgPicture.asset(
+              "assets/svg/arrow_left.svg",
+              colorFilter: ColorFilter.mode(AppColors.white, BlendMode.srcIn),
+            ),
           ),
         ),
         centerTitle: false,
-        title: Text(
-          'Scan QR Code',
-          style: AppTextStyles.h2.copyWith(color: AppColors.white),
+        title: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: Text(
+            'Scan QR Code',
+            style: AppTextStyles.h2.copyWith(color: AppColors.white),
+          ),
         ),
         actions: [
           IconButton(

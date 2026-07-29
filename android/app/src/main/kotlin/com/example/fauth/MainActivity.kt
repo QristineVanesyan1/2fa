@@ -1,4 +1,4 @@
-package com.example.authenticator
+package com.example.fauth
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

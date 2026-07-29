@@ -181,8 +181,9 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
             Expanded(
               child: passwords.isEmpty
                   ? EmptyState(
-                      title: 'No passwords yet',
-                      subtitle: 'Tap + to save your first password',
+                      title: 'No passwords saved yet',
+                      subtitle:
+                          'Save your first password to keep it within reach',
                       icon: "assets/images/empty2.png",
                     )
                   : ListView.separated(

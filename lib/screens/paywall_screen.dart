@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:authenticator/screens/home_screen.dart';
+import 'package:adapty_flutter/adapty_flutter.dart';
+import 'package:authenticator/services/adapty_service.dart';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -17,7 +20,7 @@ class PaywallScreen extends StatefulWidget {
 
 class _PaywallScreenState extends State<PaywallScreen> {
   int _selectedPlan = 0;
-  bool _showClose = false;
+  bool _showCloseButton = false;
   Timer? _closeTimer;
 
   @override
@@ -25,9 +28,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
     super.initState();
     _closeTimer = Timer(const Duration(seconds: 2), () {
       if (mounted) {
-        setState(() => _showClose = true);
+        setState(() => _showCloseButton = true);
       }
     });
+    _loadProducts();
   }
 
   @override
@@ -36,7 +40,19 @@ class _PaywallScreenState extends State<PaywallScreen> {
     super.dispose();
   }
 
-  static const List<_Plan> _plans = [
+  final AdaptyService _adapty = AdaptyService.instance;
+
+  /// Products fetched from the Adapty paywall. Empty while loading or when the
+  /// fetch failed (in which case we fall back to the static placeholders).
+  List<AdaptyPaywallProduct> _products = const [];
+  bool _purchasing = false;
+
+  /// `true` once a load attempt finished without any purchasable product
+  /// (misconfigured / unavailable store — Adapty error 1000). Distinguishes
+  /// "unavailable" from "still loading" in the [_onContinue] message.
+  bool _storeUnavailable = false;
+
+  static const List<_Plan> _fallbackPlans = [
     _Plan(
       title: 'Weekly',
       subtitle: 'Billed every week',
@@ -58,6 +74,134 @@ class _PaywallScreenState extends State<PaywallScreen> {
       highlight: 'Save 33%',
     ),
   ];
+
+  /// Plans rendered by the UI — derived from the live Adapty products when
+  /// available, otherwise the static [_fallbackPlans].
+  List<_Plan> get _plans {
+    if (_products.isEmpty) return _fallbackPlans;
+    return _products.map(_planFromProduct).toList(growable: false);
+  }
+
+  _Plan _planFromProduct(AdaptyPaywallProduct product) {
+    final period = product.subscription?.period;
+    final hasTrial =
+        product.subscription?.offer?.phases.any(
+          (p) => p.paymentMode == AdaptyPaymentMode.freeTrial,
+        ) ??
+        false;
+    return _Plan(
+      title: product.localizedTitle,
+      subtitle: product.localizedDescription,
+      price: product.price.localizedString ?? '',
+      period: period == null ? '' : '/${_periodSuffix(period.unit)}',
+      badge: hasTrial ? 'Free trial' : null,
+    );
+  }
+
+  String _periodSuffix(AdaptyPeriodUnit unit) {
+    switch (unit) {
+      case AdaptyPeriodUnit.day:
+        return 'day';
+      case AdaptyPeriodUnit.week:
+        return 'wk';
+      case AdaptyPeriodUnit.month:
+        return 'mo';
+      case AdaptyPeriodUnit.year:
+        return 'yr';
+      case AdaptyPeriodUnit.unknown:
+        return '';
+    }
+  }
+
+  Future<void> _loadProducts() async {
+    try {
+      final data = await _adapty.loadPaywall();
+      if (!mounted) return;
+      setState(() {
+        _products = data.products;
+        _storeUnavailable = data.storeUnavailable;
+        if (_selectedPlan >= _products.length && _products.isNotEmpty) {
+          _selectedPlan = 0;
+        }
+      });
+    } catch (_) {
+      // Keep the static fallback plans visible if the fetch fails, but allow
+      // "Continue" to retry rather than reporting the store as unavailable.
+      if (mounted) setState(() => _storeUnavailable = false);
+    }
+  }
+
+  Future<void> _onContinue() async {
+    if (_purchasing) return;
+    // The static fallback tiles are on screen both while the live products are
+    // still loading and if the fetch failed, so `_selectedPlan` can point past
+    // the end of an empty `_products`. Retry the fetch instead of indexing into
+    // it (RangeError) — and without waving the user through for free.
+    if (_products.isEmpty) {
+      _showMessage(
+        _storeUnavailable
+            ? 'Subscriptions are unavailable right now. Please try again later.'
+            : 'Plans are still loading. Please try again in a moment.',
+      );
+      unawaited(_loadProducts());
+      return;
+    }
+    setState(() => _purchasing = true);
+    try {
+      final unlocked = await _adapty.purchase(_products[_selectedPlan]);
+      if (!mounted) return;
+      if (unlocked) {
+        _goToHome();
+      }
+    } catch (e) {
+      _showMessage('Purchase failed. Please try again.');
+    } finally {
+      if (mounted) setState(() => _purchasing = false);
+    }
+  }
+
+  Future<void> _onRestore() async {
+    if (_purchasing) return;
+    setState(() => _purchasing = true);
+    try {
+      final unlocked = await _adapty.restore();
+      if (!mounted) return;
+      if (unlocked) {
+        _goToHome();
+      } else {
+        _showMessage('No active subscription to restore.');
+      }
+    } catch (_) {
+      _showMessage('Restore failed. Please try again.');
+    } finally {
+      if (mounted) setState(() => _purchasing = false);
+    }
+  }
+
+  void _goToHome() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      (route) => false,
+    );
+  }
+
+  /// Dismisses the paywall. Since the paywall replaces the splash screen (there
+  /// is no route underneath to pop back to), closing it should take the user
+  /// into the app rather than doing nothing.
+  void _onClose() {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    } else {
+      _goToHome();
+    }
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
 
   Future<void> _openUrl(String url) async {
     final uri = Uri.parse(url);
@@ -149,33 +293,48 @@ class _PaywallScreenState extends State<PaywallScreen> {
                           ],
                         ),
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                builder: (_) => const HomeScreen(),
-                              ),
-                              (route) => false,
-                            );
-                          },
+                          onPressed: _purchasing ? null : _onContinue,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.orange500,
                             foregroundColor: AppColors.white,
+                            disabledBackgroundColor: AppColors.orange500,
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(vertical: 18),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(100),
                             ),
                           ),
-                          child: Text(
-                            "Continue",
-                            style: AppTextStyles.bodyMediumSemiBold.copyWith(
-                              color: AppColors.white,
-                            ),
+                          child: _purchasing
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.4,
+                                    valueColor: AlwaysStoppedAnimation(
+                                      AppColors.white,
+                                    ),
+                                  ),
+                                )
+                              : Text(
+                                  "Continue",
+                                  style: AppTextStyles.bodyMediumSemiBold
+                                      .copyWith(color: AppColors.white),
+                                ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: _purchasing ? null : _onRestore,
+                        child: Text(
+                          'Restore purchases',
+                          style: AppTextStyles.captionBold.copyWith(
+                            color: AppColors.gray500,
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 4),
                       Align(
                         alignment: Alignment.topCenter,
                         child: Text(
@@ -224,13 +383,20 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 ),
               ],
             ),
-            if (_showClose)
+            if (_showCloseButton)
               Align(
                 alignment: Alignment.topLeft,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(Icons.close, color: AppColors.black),
+                child: AnimatedOpacity(
+                  opacity: _showCloseButton ? 1 : 0,
+                  duration: const Duration(milliseconds: 200),
+                  child: IgnorePointer(
+                    ignoring: !_showCloseButton,
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: _onClose,
+                      icon: const Icon(Icons.close, color: AppColors.black),
+                    ),
+                  ),
                 ),
               ),
           ],

@@ -189,7 +189,7 @@ class _CodesScreenState extends State<CodesScreen> {
                   ? EmptyState(
                       title: 'Nothing here yet',
                       subtitle:
-                          'Add your first account manually\nor scan a QR code',
+                          'Add your first account manually or scan a QR code',
                       icon: "assets/images/empty1.png",
                     )
                   : ListView.separated(

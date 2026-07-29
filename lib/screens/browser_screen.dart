@@ -2,7 +2,7 @@ import 'package:authenticator/const/colors.dart';
 import 'package:authenticator/const/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 /// Private in-app browser surface with three states:
@@ -364,7 +364,7 @@ class _ToolBar extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           _CircleButton(
-            icon: 'assets/svg/Generate.svg',
+            icon: 'assets/svg/generate.svg',
             enabled: active,
             onTap: onReload,
           ),
