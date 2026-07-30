@@ -52,33 +52,9 @@ class _PaywallScreenState extends State<PaywallScreen> {
   /// "unavailable" from "still loading" in the [_onContinue] message.
   bool _storeUnavailable = false;
 
-  static const List<_Plan> _fallbackPlans = [
-    _Plan(
-      title: 'Weekly',
-      subtitle: 'Billed every week',
-      price: '\$2.49',
-      period: '/wk',
-      badge: '3 days free trial',
-    ),
-    _Plan(
-      title: 'Monthly',
-      subtitle: 'Billed every month',
-      price: '\$4.99',
-      period: '/mo',
-    ),
-    _Plan(
-      title: 'Yearly',
-      subtitle: 'Billed annually',
-      price: '\$39.99',
-      period: '/yr',
-      highlight: 'Save 33%',
-    ),
-  ];
-
   /// Plans rendered by the UI — derived from the live Adapty products when
   /// available, otherwise the static [_fallbackPlans].
   List<_Plan> get _plans {
-    if (_products.isEmpty) return _fallbackPlans;
     return _products.map(_planFromProduct).toList(growable: false);
   }
 
@@ -92,9 +68,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
     return _Plan(
       title: product.localizedTitle,
       subtitle: product.localizedDescription,
-      price: product.price.localizedString ?? '',
+      price: "${product.price.currencySymbol}${product.price.amount}",
       period: period == null ? '' : '/${_periodSuffix(period.unit)}',
       badge: hasTrial ? 'Free trial' : null,
+      highlight: product.subscription?.period.unit == AdaptyPeriodUnit.year
+          ? "Save 33%"
+          : null,
     );
   }
 
@@ -437,6 +416,8 @@ class _PlanTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(plan);
+    print("object");
     final tile = Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
