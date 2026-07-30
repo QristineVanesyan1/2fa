@@ -4,6 +4,7 @@ import 'package:authenticator/screens/codes_screen.dart';
 import 'package:authenticator/screens/passwords_screen.dart';
 import 'package:authenticator/screens/settings_screen.dart';
 import 'package:authenticator/widgets/bottom_nav_bar.dart';
+import 'package:authenticator/widgets/paywall_gate.dart';
 import 'package:flutter/material.dart';
 
 /// Home shell that hosts the four tabs and owns the bottom navigation.
@@ -44,13 +45,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: AppColors.base,
-      body: _screenFor(_navIndex),
-      bottomNavigationBar: BottomNavBar(
-        index: _navIndex,
-        onChanged: (i) => setState(() => _navIndex = i),
+    // Once the introductory offer is used up and there's no subscription, every
+    // tap anywhere in the app shell re-opens the paywall.
+    return PaywallGate(
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: AppColors.base,
+        body: _screenFor(_navIndex),
+        bottomNavigationBar: BottomNavBar(
+          index: _navIndex,
+          onChanged: (i) => setState(() => _navIndex = i),
+        ),
       ),
     );
   }

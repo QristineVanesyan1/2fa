@@ -6,6 +6,7 @@ import 'package:authenticator/const/styles.dart';
 
 import 'package:authenticator/screens/home_screen.dart';
 import 'package:adapty_flutter/adapty_flutter.dart';
+import 'package:authenticator/services/access_gate.dart';
 import 'package:authenticator/services/adapty_service.dart';
 
 import 'package:flutter/gestures.dart';
@@ -214,6 +215,14 @@ class _PaywallScreenState extends State<PaywallScreen> {
   }
 
   void _goToHome() {
+    // The user is entitled now — lift the "paywall on every tap" gate before
+    // handing them back to the app.
+    AccessGate.instance.unlock();
+    if (Navigator.of(context).canPop()) {
+      // Presented on top of the app (e.g. by PaywallGate): just dismiss.
+      Navigator.of(context).pop();
+      return;
+    }
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const HomeScreen()),
       (route) => false,

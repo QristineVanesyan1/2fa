@@ -166,6 +166,7 @@ class AdaptyService {
   /// rendered by a custom paywall UI. Returns an empty product list when the
   /// SDK isn't activated so the UI can fall back to placeholder plans.
   ///
+
   /// Only auto-renewable **subscription** products are returned — any
   /// non-subscription (consumable / non-consumable) in-app purchases attached
   /// to the paywall are filtered out, since this app sells subscriptions only.
