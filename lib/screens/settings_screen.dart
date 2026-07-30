@@ -1,5 +1,7 @@
 import 'package:authenticator/const/colors.dart';
+import 'package:authenticator/const/links.dart';
 import 'package:authenticator/const/styles.dart';
+
 import 'package:authenticator/screens/set_passcode_screen.dart';
 import 'package:authenticator/services/adapty_service.dart';
 import 'package:authenticator/services/app_lock_service.dart';
@@ -312,7 +314,7 @@ class _SettingsBodyState extends State<SettingsBody> {
                 iconBg: AppColors.blue,
                 title: 'Terms of Use',
                 trailing: const _Chevron(),
-                onTap: () => _openUrl('https://google.com'),
+                onTap: () => _openUrl(AppLinks.termsOfUse),
               ),
               const _Divider(),
               _SettingRow(
@@ -320,7 +322,7 @@ class _SettingsBodyState extends State<SettingsBody> {
                 iconBg: AppColors.success,
                 title: 'Privacy Policy',
                 trailing: const _Chevron(),
-                onTap: () => _openUrl('https://google.com'),
+                onTap: () => _openUrl(AppLinks.privacyPolicy),
               ),
 
               const _Divider(),

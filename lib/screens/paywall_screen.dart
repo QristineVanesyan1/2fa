@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:authenticator/const/colors.dart';
+import 'package:authenticator/const/links.dart';
 import 'package:authenticator/const/styles.dart';
+
 import 'package:authenticator/screens/home_screen.dart';
 import 'package:adapty_flutter/adapty_flutter.dart';
 import 'package:authenticator/services/adapty_service.dart';
@@ -68,7 +70,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
     return _Plan(
       title: product.localizedTitle,
       subtitle: product.localizedDescription,
-      price: "${product.price.currencySymbol}${product.price.amount}",
+      price: product.price.localizedString ?? "",
       period: period == null ? '' : '/${_periodSuffix(period.unit)}',
       badge: hasTrial ? 'Free trial' : null,
       highlight: product.subscription?.period.unit == AdaptyPeriodUnit.year
@@ -139,22 +141,23 @@ class _PaywallScreenState extends State<PaywallScreen> {
     }
   }
 
+  /// "Restore purchases": re-checks the store for an existing subscription and
+  /// unlocks the app when one is found.
+  ///
+  /// [AdaptyService.restorePurchases] never throws and tells "nothing to
+  /// restore" apart from a real failure, so every path ends with either the
+  /// home screen or an accurate message — and the button is always re-enabled.
   Future<void> _onRestore() async {
     if (_purchasing) return;
     setState(() => _purchasing = true);
-    try {
-      final unlocked = await _adapty.restore();
-      if (!mounted) return;
-      if (unlocked) {
-        _goToHome();
-      } else {
-        _showMessage('No active subscription to restore.');
-      }
-    } catch (_) {
-      _showMessage('Restore failed. Please try again.');
-    } finally {
-      if (mounted) setState(() => _purchasing = false);
+    final result = await _adapty.restorePurchases();
+    if (!mounted) return;
+    setState(() => _purchasing = false);
+    if (result.isSuccess) {
+      _goToHome();
+      return;
     }
+    _showMessage(result.userMessage);
   }
 
   void _goToHome() {
@@ -303,10 +306,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
                       ),
 
                       const SizedBox(height: 8),
+
                       Align(
                         alignment: Alignment.topCenter,
                         child: Text(
                           'By continuing, you agree to:',
+
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.gray500,
                           ),
@@ -325,7 +330,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                               ),
                               recognizer: TapGestureRecognizer()
                                 ..onTap = () =>
-                                    _openUrl('https://www.google.com'),
+                                    _openUrl(AppLinks.privacyPolicy),
                             ),
                             TextSpan(
                               text: ' & ',
@@ -340,8 +345,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                                 decoration: TextDecoration.underline,
                               ),
                               recognizer: TapGestureRecognizer()
-                                ..onTap = () =>
-                                    _openUrl('https://www.facebook.com'),
+                                ..onTap = () => _openUrl(AppLinks.termsOfUse),
                             ),
                           ],
                         ),
@@ -405,8 +409,6 @@ class _PlanTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(plan);
-    print("object");
     final tile = Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
