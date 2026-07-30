@@ -157,8 +157,8 @@ class _SettingsBodyState extends State<SettingsBody> {
   Future<void> _contactSupport() async {
     final uri = Uri(
       scheme: 'mailto',
-      path: 'support@authenticator.app',
-      query: 'subject=${Uri.encodeComponent('Authenticator Support')}',
+      path: 'avifobama19@gmail.com',
+      query: 'subject=${Uri.encodeComponent('2FA App Authenticator Support')}',
     );
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && mounted) {
