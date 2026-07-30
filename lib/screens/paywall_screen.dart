@@ -303,17 +303,6 @@ class _PaywallScreenState extends State<PaywallScreen> {
                       ),
 
                       const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: _purchasing ? null : _onRestore,
-                        child: Text(
-                          'Restore purchases',
-                          style: AppTextStyles.captionBold.copyWith(
-                            color: AppColors.gray500,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 4),
                       Align(
                         alignment: Alignment.topCenter,
                         child: Text(
