@@ -57,6 +57,12 @@ class AdaptyService {
   /// frame. It's mostly local work, hence a shorter leash than a data request.
   static const Duration _activationTimeout = Duration(seconds: 5);
 
+  /// Restoring is user-initiated and involves a StoreKit / Play receipt
+  /// refresh (which can legitimately show a sign-in prompt), so it gets a more
+  /// generous budget than a background request — but still a finite one, so the
+  /// button's spinner can never hang forever.
+  static const Duration _restoreTimeout = Duration(seconds: 30);
+
   bool _activated = false;
 
   /// Whether the SDK has been successfully activated.
@@ -268,12 +274,66 @@ class AdaptyService {
     }
   }
 
-  /// Restores previous purchases and returns whether premium is now active.
-  Future<bool> restore() async {
-    if (!_activated) return false;
-    final profile = await Adapty().restorePurchases();
-    return _isPremium(profile);
+  /// Restores previous purchases and reports the outcome.
+  ///
+  /// Never throws — every failure mode is mapped onto a [RestoreResult] so the
+  /// UI can always show an accurate, actionable message instead of a generic
+  /// "restore failed":
+  ///  * SDK not activated yet (no network on launch / bad key) -> one last
+  ///    activation attempt, then [RestoreOutcome.unavailable].
+  ///  * Store has no transactions for this Apple ID / Google account
+  ///    (`noPurchasesToRestore`, 1004) -> [RestoreOutcome.noSubscription].
+  ///  * Transactions exist but the premium access level isn't active (expired /
+  ///    refunded) -> [RestoreOutcome.noSubscription].
+  ///  * Network / store failures & timeouts -> [RestoreOutcome.failed].
+  Future<RestoreResult> restorePurchases() async {
+    // The user may have launched offline, in which case activation was skipped
+    // or timed out. Give it one more chance before giving up — activate() is a
+    // safe no-op when the SDK is already running.
+    if (!_activated) await activate();
+    if (!_activated) {
+      debugPrint('Adapty: restore requested but the SDK is not activated.');
+      return const RestoreResult(RestoreOutcome.unavailable);
+    }
+    try {
+      final profile = await Adapty().restorePurchases().timeout(
+        _restoreTimeout,
+      );
+      if (_isPremium(profile)) {
+        return const RestoreResult(RestoreOutcome.restored);
+      }
+      debugPrint(
+        'Adapty: restore succeeded but access level '
+        '"$premiumAccessLevelId" is not active (access levels: '
+        '${profile.accessLevels.keys.join(', ')}).',
+      );
+      return const RestoreResult(RestoreOutcome.noSubscription);
+    } on TimeoutException {
+      debugPrint('Adapty: restore timed out after $_restoreTimeout.');
+      return const RestoreResult(RestoreOutcome.failed);
+    } on AdaptyError catch (e) {
+      debugPrint('Adapty restore error (${e.code}): ${e.message}');
+      // "Nothing to restore" is a normal outcome, not an error.
+      if (e.code == AdaptyErrorCode.noPurchasesToRestore ||
+          e.code == AdaptyErrorCode.cantReadReceipt) {
+        return const RestoreResult(RestoreOutcome.noSubscription);
+      }
+      if (e.code == AdaptyErrorCode.paymentCancelled) {
+        return const RestoreResult(RestoreOutcome.cancelled);
+      }
+      return RestoreResult(RestoreOutcome.failed, message: e.message);
+    } catch (e) {
+      debugPrint('Adapty restore error: $e');
+      return const RestoreResult(RestoreOutcome.failed);
+    }
   }
+
+  /// Restores previous purchases and returns whether premium is now active.
+  ///
+  /// Convenience wrapper over [restorePurchases] for callers that only need a
+  /// boolean.
+  Future<bool> restore() async =>
+      (await restorePurchases()).outcome == RestoreOutcome.restored;
 
   bool _isPremium(AdaptyProfile profile) =>
       profile.accessLevels[premiumAccessLevelId]?.isActive ?? false;
@@ -287,10 +347,60 @@ class AdaptyService {
   }
 }
 
+/// How a [AdaptyService.restorePurchases] attempt ended.
+enum RestoreOutcome {
+  /// Premium is now active — unlock the app.
+  restored,
+
+  /// The call succeeded but the store/profile has no active premium
+  /// subscription for this account (never bought, expired or refunded).
+  noSubscription,
+
+  /// Purchases can't be checked at all right now (SDK not activated — e.g. no
+  /// network since launch).
+  unavailable,
+
+  /// The user dismissed the store's sign-in / restore prompt.
+  cancelled,
+
+  /// Network or store error — retrying later may work.
+  failed,
+}
+
+/// Outcome of a restore attempt, plus the store's message when it failed.
+class RestoreResult {
+  const RestoreResult(this.outcome, {this.message});
+
+  final RestoreOutcome outcome;
+
+  /// Underlying store/SDK message, when there was one. Useful for logs; the UI
+  /// prefers [userMessage].
+  final String? message;
+
+  bool get isSuccess => outcome == RestoreOutcome.restored;
+
+  /// Message to show the user for this outcome.
+  String get userMessage {
+    switch (outcome) {
+      case RestoreOutcome.restored:
+        return 'Purchases restored';
+      case RestoreOutcome.noSubscription:
+        return 'No active subscription found for this account.';
+      case RestoreOutcome.unavailable:
+        return 'Store is unavailable. Check your connection and try again.';
+      case RestoreOutcome.cancelled:
+        return 'Restore cancelled';
+      case RestoreOutcome.failed:
+        return 'Restore failed. Please try again.';
+    }
+  }
+}
+
 /// Bundle of a paywall and its resolved products for the custom paywall UI.
 ///
 /// [paywall] is `null` when the SDK isn't activated yet (placeholder key), in
 /// which case [products] is empty and the UI shows placeholder plans.
+
 class AdaptyPaywallData {
   const AdaptyPaywallData({
     required this.paywall,

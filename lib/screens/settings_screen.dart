@@ -113,31 +113,22 @@ class _SettingsBodyState extends State<SettingsBody> {
 
   /// "Restore Purchase": asks the store for previous transactions and unlocks
   /// premium when an active subscription is found.
+  ///
+  /// [AdaptyService.restorePurchases] never throws — it maps activation
+  /// problems, "nothing to restore" and network failures onto distinct
+  /// outcomes — so the button always ends with an accurate toast and the
+  /// spinner is always cleared.
   Future<void> _restorePurchase() async {
     if (_restoring) return;
     setState(() => _restoring = true);
-    try {
-      // Safe to call repeatedly — activate() is a no-op once activated.
-      await _adapty.activate();
-      final unlocked = await _adapty.restore();
-      if (!mounted) return;
-      CustomToast.show(
-        context,
-        message: unlocked
-            ? 'Purchases restored'
-            : 'No active subscription to restore.',
-        success: unlocked,
-      );
-    } catch (_) {
-      if (!mounted) return;
-      CustomToast.show(
-        context,
-        message: 'Restore failed. Please try again.',
-        success: false,
-      );
-    } finally {
-      if (mounted) setState(() => _restoring = false);
-    }
+    final result = await _adapty.restorePurchases();
+    if (!mounted) return;
+    setState(() => _restoring = false);
+    CustomToast.show(
+      context,
+      message: result.userMessage,
+      success: result.isSuccess,
+    );
   }
 
   Future<void> _shareApp() async {
