@@ -419,7 +419,7 @@ class _PlanTile extends StatelessWidget {
     print(plan);
     print("object");
     final tile = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
@@ -440,7 +440,7 @@ class _PlanTile extends StatelessWidget {
                   children: [
                     Text(
                       plan.title,
-                      style: AppTextStyles.bodyMediumSemiBold.copyWith(
+                      style: AppTextStyles.bodySmallSemiBold.copyWith(
                         color: AppColors.black,
                       ),
                     ),
@@ -468,7 +468,7 @@ class _PlanTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   plan.subtitle,
-                  style: AppTextStyles.caption.copyWith(
+                  style: AppTextStyles.captionMedium.copyWith(
                     color: AppColors.gray500,
                   ),
                 ),
