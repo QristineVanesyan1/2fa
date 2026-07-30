@@ -62,21 +62,74 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
   _Plan _planFromProduct(AdaptyPaywallProduct product) {
     final period = product.subscription?.period;
-    final hasTrial =
-        product.subscription?.offer?.phases.any(
-          (p) => p.paymentMode == AdaptyPaymentMode.freeTrial,
-        ) ??
-        false;
     return _Plan(
       title: product.localizedTitle,
       subtitle: product.localizedDescription,
       price: product.price.localizedString ?? "",
       period: period == null ? '' : '/${_periodSuffix(period.unit)}',
-      badge: hasTrial ? 'Free trial' : null,
+      badge: _trialLabel(product),
       highlight: product.subscription?.period.unit == AdaptyPeriodUnit.year
           ? "Save 33%"
           : null,
     );
+  }
+
+  /// Label for the product's introductory free trial, e.g. "3 days free".
+  ///
+  /// Adapty exposes the App Store / Play *introductory offer* on
+  /// `subscription.offer`. Its phases describe what the user pays over time;
+  /// the free trial is the phase whose `paymentMode` is [freeTrial], and its
+  /// length is `subscriptionPeriod` (unit + numberOfUnits) repeated
+  /// `numberOfPeriods` times — so a "3 day free trial" arrives as
+  /// `unit: day, numberOfUnits: 3, numberOfPeriods: 1`.
+  ///
+  /// Returns `null` when the product has no trial, or when the user is no
+  /// longer eligible (the store omits the offer entirely in that case), so we
+  /// never promise a trial that can't actually be redeemed.
+  String? _trialLabel(AdaptyPaywallProduct product) {
+    final offer = product.subscription?.offer;
+    if (offer == null) return null;
+    // Only introductory offers are shown here; promotional / win-back offers
+    // are targeted campaigns with their own messaging.
+    if (offer.identifier.type != AdaptySubscriptionOfferType.introductory) {
+      return null;
+    }
+    AdaptySubscriptionPhase? trial;
+    for (final phase in offer.phases) {
+      if (phase.paymentMode == AdaptyPaymentMode.freeTrial) {
+        trial = phase;
+        break;
+      }
+    }
+    if (trial == null) return null;
+
+    // Prefer the store's localized strings when present ("3 days").
+    final localized = trial.localizedSubscriptionPeriod;
+    if (localized != null && localized.isNotEmpty) {
+      return '$localized free';
+    }
+
+    final units =
+        trial.subscriptionPeriod.numberOfUnits * trial.numberOfPeriods;
+    final unitName = _periodName(trial.subscriptionPeriod.unit, units);
+    if (unitName.isEmpty) return 'Free trial';
+    return '$units $unitName free';
+  }
+
+  String _periodName(AdaptyPeriodUnit unit, int count) {
+    final plural = count == 1 ? '' : 's';
+    switch (unit) {
+      case AdaptyPeriodUnit.day:
+        return 'day$plural';
+      case AdaptyPeriodUnit.week:
+        return 'week$plural';
+      case AdaptyPeriodUnit.month:
+        return 'month$plural';
+      case AdaptyPeriodUnit.year:
+        return 'year$plural';
+      case AdaptyPeriodUnit.unknown:
+        return '';
+    }
   }
 
   String _periodSuffix(AdaptyPeriodUnit unit) {
