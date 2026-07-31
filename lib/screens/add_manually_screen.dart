@@ -13,11 +13,16 @@ class AddManuallyScreen extends StatefulWidget {
   final String? initialAccount;
   final String? initialSecret;
 
+  /// When non-null the screen edits the account at this index instead of
+  /// appending a new one.
+  final int? editIndex;
+
   const AddManuallyScreen({
     super.key,
     this.initialService,
     this.initialAccount,
     this.initialSecret,
+    this.editIndex,
   });
 
   @override
@@ -105,11 +110,27 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
       secret: _secretController.text.trim(),
       avatarColor: _colorForService(service),
     );
-    await _dataSource.addAccount(account);
+
+    final editIndex = widget.editIndex;
+    if (editIndex != null) {
+      // Editing: replace the existing entry in place so its position is kept.
+      final accounts = await _dataSource.getAccounts();
+      if (editIndex >= 0 && editIndex < accounts.length) {
+        accounts[editIndex] = account;
+        await _dataSource.saveAccounts(accounts);
+      } else {
+        await _dataSource.addAccount(account);
+      }
+    } else {
+      await _dataSource.addAccount(account);
+    }
 
     if (!mounted) return;
     Navigator.of(context).pop();
-    CustomToast.show(context, message: '$service added');
+    CustomToast.show(
+      context,
+      message: editIndex != null ? '$service updated' : '$service added',
+    );
 
     // Successfully adding a code is a "happy moment" — a good time to ask for
     // a rating. ReviewService throttles this itself (and Apple throttles it
@@ -137,7 +158,8 @@ class _AddManuallyScreenState extends State<AddManuallyScreen> {
           ),
         ),
         title: Text(
-          'Add Manually',
+          widget.editIndex != null ? 'Edit Account' : 'Add Manually',
+
           style: AppTextStyles.h2.copyWith(color: AppColors.black),
         ),
         actions: [

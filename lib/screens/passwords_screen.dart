@@ -355,7 +355,7 @@ class _PasswordDetailSheetState extends State<_PasswordDetailSheet> {
               height: 5,
               width: 40,
               decoration: BoxDecoration(
-                color: AppColors.info,
+                color: AppColors.black.withAlpha(30),
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
@@ -569,21 +569,10 @@ class _DeletePasswordSheet extends StatelessWidget {
           20,
           24 + MediaQuery.paddingOf(context).bottom,
         ),
-        padding: EdgeInsets.fromLTRB(24, 12, 24, 24),
+        padding: EdgeInsets.fromLTRB(24, 24, 24, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Grab handle.
-            Container(
-              height: 5,
-              width: 40,
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: AppColors.gray300,
-                borderRadius: BorderRadius.circular(3),
-              ),
-            ),
-
             Container(
               height: 64,
               width: 64,

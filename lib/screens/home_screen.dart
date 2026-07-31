@@ -43,19 +43,23 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /// Settings must stay usable without a subscription (restore purchases,
+  /// support, passcode, …), so it is the one tab that is never gated.
+  static const int _settingsIndex = 3;
+
   @override
   Widget build(BuildContext context) {
-    // Once the introductory offer is used up and there's no subscription, every
-    // tap anywhere in the app shell re-opens the paywall.
-    return PaywallGate(
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        backgroundColor: AppColors.base,
-        body: _screenFor(_navIndex),
-        bottomNavigationBar: BottomNavBar(
-          index: _navIndex,
-          onChanged: (i) => setState(() => _navIndex = i),
-        ),
+    final content = _screenFor(_navIndex);
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      backgroundColor: AppColors.base,
+      // While there's no active subscription, every tap on a premium tab
+      // re-opens the paywall. The bottom navigation and the Settings tab stay
+      // outside the gate so the user can always reach them.
+      body: _navIndex == _settingsIndex ? content : PaywallGate(child: content),
+      bottomNavigationBar: BottomNavBar(
+        index: _navIndex,
+        onChanged: (i) => setState(() => _navIndex = i),
       ),
     );
   }
