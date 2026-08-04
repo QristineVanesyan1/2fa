@@ -67,6 +67,8 @@ Privacy Policy and Terms of Use are available inside the app.
 
 ## App Store Notes
 - Category: Utilities (secondary: Productivity)
-- Age Rating: 4+
+- Age Rating: 18+ — the built-in private browser counts as "Unrestricted Web
+  Access" in Apple's questionnaire. See docs/AGE_RATING.md. (4+ is only possible
+  if the browser is removed or restricted to an allow-list.)
 - Description uses plain text with UPPERCASE headers and hyphen bullets,
   since the App Store does not render Markdown.

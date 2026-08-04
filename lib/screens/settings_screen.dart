@@ -137,7 +137,7 @@ class _SettingsBodyState extends State<SettingsBody> {
     final box = context.findRenderObject() as RenderBox?;
 
     await Share.share(
-      'Protect your accounts with Authenticator — a simple, fast, '
+      'Protect your accounts with Volt Lock — a simple, fast, '
       'and secure 2FA app.\n\n'
       'Download it here:\n$_appUrl',
       sharePositionOrigin: box == null
@@ -158,7 +158,7 @@ class _SettingsBodyState extends State<SettingsBody> {
     final uri = Uri(
       scheme: 'mailto',
       path: 'avifobama19@gmail.com',
-      query: 'subject=${Uri.encodeComponent('2FA App Authenticator Support')}',
+      query: 'subject=${Uri.encodeComponent('Volt Lock Support')}',
     );
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!ok && mounted) {

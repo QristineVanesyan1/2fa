@@ -69,7 +69,7 @@ class MyApp extends StatelessWidget {
         );
       },
       debugShowCheckedModeBanner: false,
-      title: '2FA App Authenticator',
+      title: 'Volt Lock',
       theme: ThemeData(
         floatingActionButtonTheme: FloatingActionButtonThemeData(
           backgroundColor: AppColors.orange500,

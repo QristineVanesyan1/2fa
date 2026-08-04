@@ -229,7 +229,7 @@ class _CodesScreenState extends State<CodesScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Authenticator',
+                    'Volt Lock',
                     style: AppTextStyles.display.copyWith(
                       color: AppColors.black,
                     ),
