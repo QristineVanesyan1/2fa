@@ -50,6 +50,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
   List<AdaptyPaywallProduct> _products = const [];
   bool _purchasing = false;
 
+  /// `true` while a paywall fetch is in flight, so the plans section can show a
+  /// loading indicator instead of an empty gap.
+  bool _loadingPlans = true;
+
   /// `true` once a load attempt finished without any purchasable product
   /// (misconfigured / unavailable store — Adapty error 1000). Distinguishes
   /// "unavailable" from "still loading" in the [_onContinue] message.
@@ -59,6 +63,39 @@ class _PaywallScreenState extends State<PaywallScreen> {
   /// available, otherwise the static [_fallbackPlans].
   List<_Plan> get _plans {
     return _products.map(_planFromProduct).toList(growable: false);
+  }
+
+  /// Headline subtitle under the title. The price must reflect what the store
+  /// actually charges, so it's taken from the loaded weekly product (falling
+  /// back to the first product) instead of being hardcoded. While the products
+  /// load we omit the price rather than showing a stale one.
+  String get _priceSubtitle {
+    final product = _weeklyProduct;
+    if (product == null) {
+      return 'Start your free trial, then cancel anytime';
+    }
+    final price = product.price.localizedString;
+    if (price == null || price.isEmpty) {
+      return 'Start your free trial, then cancel anytime';
+    }
+    final unit = product.subscription?.period.unit;
+    final suffix = unit == null ? '' : '/${_periodName(unit, 1)}';
+    final hasTrial = _trialLabel(product) != null;
+    return hasTrial
+        ? 'Start your free trial, then just $price$suffix.\nCancel anytime'
+        : 'Just $price$suffix. Cancel anytime';
+  }
+
+  /// The weekly subscription product, or the first available one when the
+  /// paywall has no weekly plan.
+  AdaptyPaywallProduct? get _weeklyProduct {
+    if (_products.isEmpty) return null;
+    for (final product in _products) {
+      if (product.subscription?.period.unit == AdaptyPeriodUnit.week) {
+        return product;
+      }
+    }
+    return _products.first;
   }
 
   _Plan _planFromProduct(AdaptyPaywallProduct product) {
@@ -149,10 +186,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
   }
 
   Future<void> _loadProducts() async {
+    if (mounted && !_loadingPlans) setState(() => _loadingPlans = true);
     try {
       final data = await _adapty.loadPaywall();
       if (!mounted) return;
       setState(() {
+        _loadingPlans = false;
         _products = data.products;
         _storeUnavailable = data.storeUnavailable;
         if (_selectedPlan >= _products.length && _products.isNotEmpty) {
@@ -162,7 +201,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
     } catch (_) {
       // Keep the static fallback plans visible if the fetch fails, but allow
       // "Continue" to retry rather than reporting the store as unavailable.
-      if (mounted) setState(() => _storeUnavailable = false);
+      if (mounted) {
+        setState(() {
+          _loadingPlans = false;
+          _storeUnavailable = false;
+        });
+      }
     }
   }
 
@@ -283,7 +327,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'Start your free trial, then just \$2.49/week.\nCancel anytime',
+                          _priceSubtitle,
                           textAlign: TextAlign.center,
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.gray500,
@@ -308,14 +352,17 @@ class _PaywallScreenState extends State<PaywallScreen> {
                           subtitle: 'Session cleared automatically on exit',
                         ),
                         const SizedBox(height: 24),
-                        for (int i = 0; i < _plans.length; i++) ...[
-                          _PlanTile(
-                            plan: _plans[i],
-                            selected: _selectedPlan == i,
-                            onTap: () => setState(() => _selectedPlan = i),
-                          ),
-                          const SizedBox(height: 12),
-                        ],
+                        if (_loadingPlans)
+                          const _PlansLoadingIndicator()
+                        else
+                          for (int i = 0; i < _plans.length; i++) ...[
+                            _PlanTile(
+                              plan: _plans[i],
+                              selected: _selectedPlan == i,
+                              onTap: () => setState(() => _selectedPlan = i),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
                       ],
                     ),
                   ),
@@ -435,6 +482,36 @@ class _PaywallScreenState extends State<PaywallScreen> {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Placeholder shown in the plans section while the store products load, so the
+/// area doesn't look empty/broken during the fetch.
+class _PlansLoadingIndicator extends StatelessWidget {
+  const _PlansLoadingIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: Column(
+        children: [
+          const SizedBox(
+            height: 28,
+            width: 28,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.4,
+              valueColor: AlwaysStoppedAnimation(AppColors.orange500),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Loading plans…',
+            style: AppTextStyles.caption.copyWith(color: AppColors.gray500),
+          ),
+        ],
       ),
     );
   }
