@@ -297,9 +297,7 @@ class AdaptyService {
       return const RestoreResult(RestoreOutcome.unavailable);
     }
     try {
-      final profile = await Adapty().restorePurchases().timeout(
-        _restoreTimeout,
-      );
+      final profile = await Adapty().restorePurchases();
       if (_isPremium(profile)) {
         return const RestoreResult(RestoreOutcome.restored);
       }
