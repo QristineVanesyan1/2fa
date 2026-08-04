@@ -158,7 +158,7 @@ class AdaptyService {
   /// would otherwise leave the splash screen spinning for ~30s.
   Future<bool> hasActiveSubscription() async {
     if (!_activated) return false;
-    final profile = await Adapty().getProfile().timeout(_networkTimeout);
+    final profile = await Adapty().getProfile();
     return _isPremium(profile);
   }
 

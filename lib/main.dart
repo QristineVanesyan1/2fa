@@ -22,6 +22,13 @@ Future<void> activateAdapty() => AdaptyService.instance.activate();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent, // Transparent status bar
+      statusBarIconBrightness: Brightness.dark, // Android: black icons
+      statusBarBrightness: Brightness.light, // iOS: black icons
+    ),
+  );
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -82,6 +89,7 @@ class MyApp extends StatelessWidget {
           labelMedium: AppTextStyles.captionMedium,
           labelSmall: AppTextStyles.caption,
         ),
+
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       home: SplashScreen(coordinator: coordinator),
